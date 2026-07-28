@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InstaBuild — Where We Build</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  :root {
+    --green: #4B5320;
+    --green-dark: #3A4218;
+    --green-light: #F0F2E8;
+    --white: #FFFFFF;
+    --off-white: #F8FAF9;
+    --text: #1a1a1a;
+    --text-light: #555;
+    --radius: 16px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--white);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Nav ── */
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 80px;
+    background: #4B5320;
+    border-radius: 0 0 40px 40px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 8px 40px rgba(75,83,32,0.25);
+  }
+  nav::after {
+    content: '';
+    position: absolute;
+    bottom: -12px;
+    left: 5%;
+    width: 90%;
+    height: 20px;
+    background: #4B5320;
+    border-radius: 0 0 60% 60%;
+    opacity: 0.15;
+    z-index: -1;
+  }
+  .logo {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+  .logo-img { height: 36px; width: auto; }
+  .logo span { color: rgba(255,255,255,0.8); }
+  .nav-links { display: flex; gap: 36px; list-style: none; align-items: center; }
+  .nav-links a {
+    text-decoration: none;
+    color: rgba(255,255,255,0.85);
+    font-weight: 500;
+    font-size: 15px;
+    transition: all 0.25s;
+    padding: 8px 16px;
+    border-radius: 8px;
+  }
+  .nav-links a:hover { color: #fff; background: rgba(255,255,255,0.12); }
+  .nav-links a.active { color: #fff; background: rgba(255,255,255,0.2); font-weight: 600; }
+
+  /* ── Hero ── */
+  .page-hero {
+    background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
+    padding: 56px 80px 48px;
+    text-align: center;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+  .page-hero::before {
+    content: '';
+    position: absolute;
+    width: 400px; height: 400px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 50%;
+    top: -150px; right: -100px;
+  }
+  .page-hero h1 {
+    font-size: 46px;
+    font-weight: 900;
+    letter-spacing: -1.5px;
+    margin-bottom: 8px;
+    position: relative;
+  }
+  .page-hero p {
+    font-size: 16px;
+    opacity: 0.7;
+    max-width: 600px;
+    margin: 0 auto;
+    position: relative;
+    line-height: 1.7;
+  }
+
+  /* ── Map ── */
+  #buildMap {
+    width: 100%;
+    height: 520px;
+    background: #0a0a0a;
+    border-top: 4px solid var(--green);
+    border-bottom: 4px solid var(--green);
+  }
+  .map-wrapper {
+    position: relative;
+  }
+  .map-legend {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    background: rgba(255,255,255,0.95);
+    padding: 16px 20px;
+    border-radius: 14px;
+    z-index: 1000;
+    font-size: 12px;
+    line-height: 2.2;
+    pointer-events: none;
+    border: 1px solid rgba(75,83,32,0.12);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+  }
+  .map-legend span {
+    display: inline-block;
+    width: 12px; height: 12px;
+    border-radius: 3px;
+    margin-right: 10px;
+    vertical-align: middle;
+  }
+
+  /* ── Stats Bar ── */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background: #4B5320;
+    padding: 0;
+  }
+  .stat-item {
+    padding: 28px 20px;
+    text-align: center;
+    color: #fff;
+    border-right: 1px solid rgba(255,255,255,0.1);
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-item .num {
+    font-size: 34px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    margin-bottom: 2px;
+  }
+  .stat-item .label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.7;
+    font-weight: 500;
+  }
+
+  /* ── Content Section ── */
+  .content-section {
+    padding: 80px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .section-title {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .section-title h2 {
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+  .section-title p {
+    font-size: 15px;
+    color: var(--text-light);
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  /* ── Country Cards ── */
+  .countries-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  .country-card {
+    background: var(--white);
+    border: 1px solid rgba(75,83,32,0.07);
+    border-radius: var(--radius);
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .country-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: #4B5320;
+    border-radius: 0 4px 4px 0;
+  }
+  .country-card:hover {
+    border-color: rgba(75,83,32,0.2);
+    box-shadow: 0 10px 30px rgba(75,83,32,0.08);
+    transform: translateY(-3px);
+  }
+  .country-flag {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 900;
+    color: #fff;
+    flex-shrink: 0;
+    letter-spacing: -0.5px;
+  }
+  .country-body { flex: 1; }
+  .country-body .name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+  .country-body .city {
+    font-size: 13px;
+    color: var(--text-light);
+  }
+  .country-homes {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--green);
+    letter-spacing: -0.5px;
+  }
+
+  /* ── Projects Showcase ── */
+  .showcase-section {
+    background: var(--off-white);
+    padding: 80px;
+  }
+  .showcase-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .showcase-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid rgba(75,83,32,0.06);
+    transition: all 0.3s;
+  }
+  .showcase-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 50px rgba(75,83,32,0.1);
+  }
+  .showcase-visual {
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -2px;
+  }
+  .showcase-info {
+    padding: 20px 22px;
+  }
+  .showcase-info h4 {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .showcase-info p {
+    font-size: 13px;
+    color: var(--text-light);
+    line-height: 1.6;
+  }
+
+  .section-divider { width: 100%; height: 10px; background: var(--green); }
+
+  footer {
+    padding: 24px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-light);
+    border-top: 1px solid rgba(0,0,0,0.06);
+  }
+
+  .map-tooltip {
+    background: rgba(0,0,0,0.88) !important;
+    border: 1px solid rgba(255,255,255,0.15) !important;
+    border-radius: 8px !important;
+    color: #fff !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 12px !important;
+    padding: 5px 12px !important;
+  }
+
+  @media (max-width: 900px) {
+    nav { padding: 14px 20px; }
+    .page-hero { padding: 36px 20px 32px; }
+    .page-hero h1 { font-size: 28px; }
+    #buildMap { height: 360px; }
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .content-section { padding: 40px 20px; }
+    .countries-grid { grid-template-columns: 1fr 1fr; }
+    .showcase-section { padding: 40px 20px; }
+    .showcase-grid { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">
+    <img src="logo.png" alt="InstaBuild" class="logo-img">
+    Insta<span>Build</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="build.html" class="active">Build</a></li>
+    <li><a href="team.html">Team</a></li>
+    <li><a href="index.html#3d">See Us in 3D</a></li>
+  </ul>
+</nav>
+
+<section class="page-hero">
+  <h1>Where We Build</h1>
+  <p>Interactive heat map showing every InstaBuild project across Europe — darker zones mean more homes.</p>
+</section>
+
+<div class="map-wrapper">
+  <div id="buildMap"></div>
+  <div class="map-legend">
+    <div><span style="background:#8b1a0a;"></span> 100+ homes</div>
+    <div><span style="background:#d4380d;"></span> 50 – 99 homes</div>
+    <div><span style="background:#ff6b1a;"></span> 20 – 49 homes</div>
+    <div><span style="background:#ff8c2e;"></span> 5 – 19 homes</div>
+    <div><span style="background:#ffc74d;"></span> 1 – 4 homes</div>
+  </div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat-item"><div class="num">750+</div><div class="label">Total Homes</div></div>
+  <div class="stat-item"><div class="num">9</div><div class="label">Countries</div></div>
+  <div class="stat-item"><div class="num">14</div><div class="label">Years Active</div></div>
+  <div class="stat-item"><div class="num">98%</div><div class="label">Satisfaction</div></div>
+</div>
+
+<div class="content-section">
+  <div class="section-title">
+    <h2>Project Density by Country</h2>
+    <p>From our headquarters in Kosovo to emerging markets across Europe.</p>
+  </div>
+  <div class="countries-grid">
+    <div class="country-card">
+      <div class="country-flag" style="background:linear-gradient(135deg,#8b1a0a,#d4380d);">KS</div>
+      <div class="country-body"><div class="name">Kosovo</div><div class="city">HQ · Prishtina</div></div>
+      <div class="country-homes">500+</div>
+    </div>
+    <div class="country-card">
+      <div class="country-flag" style="background:linear-gradient(135deg,#ff6b1a,#d4380d);">TR</div>
+      <div class="country-body"><div class="name">Turkey</div><div class="city">Istanbul · Ankara</div></div>
+      <div class="country-homes">55</div>
+    </div>
+    <div class="country-card">
+      <div class="country-flag" style="background:linear-gradient(135deg,#ff6b1a,#d4380d);">AT</div>
+      <div class="country-body"><div class="name">Austria</div><div class="city">Vienna</div></div>
+      <div class="country-homes">45</div>
+    </div>
+    <div class="country-card">
+      <div class="country-flag" style="background:linear-gradient(135deg,#ff8c2e,#ff6b1a);">AL</div>
+      <div class="country-body"><div class="name">Albania</div><div class="city">Tiranë</div></div>
+      <div class="country-homes">35</div>
+    </div>
+    <div class="country-card">
+      <div class="country-flag" style="background:linear-gradient(135deg,#ff8c2e,#ff6b1a);">DE</div>
+      <div class="country-body"><div class="name">Germany</div><div class="city">Munich · Berlin</div></div>
+      <div class="country-homes">30</div>
+    </div>
+    <div class="country-card">
+      <div class="country-flag" style="background:linear-gradient(135deg,#ffc74d,#ff8c2e);">CH</div>
+      <div class="country-body"><div class="name">Switzerland</div><div class="city">Zürich</div></div>
+      <div class="country-homes">22</div>
+    </div>
+    <div class="country-card">
+      <div class="country-flag" style="background:linear-gradient(135deg,#ffc74d,#ff8c2e);">MK</div>
+      <div class="country-body"><div class="name">N. Macedonia</div><div class="city">Skopje</div></div>
+      <div class="country-homes">18</div>
+    </div>
+    <div class="country-card">
+      <div class="country-flag" style="background:linear-gradient(135deg,#ffc74d,#ff8c2e);">IT</div>
+      <div class="country-body"><div class="name">Italy</div><div class="city">Milan</div></div>
+      <div class="country-homes">12</div>
+    </div>
+    <div class="country-card">
+      <div class="country-flag" style="background:linear-gradient(135deg,#ffc74d,#ff8c2e);">ME</div>
+      <div class="country-body"><div class="name">Montenegro</div><div class="city">Coastal Region</div></div>
+      <div class="country-homes">10</div>
+    </div>
+  </div>
+</div>
+
+<section class="showcase-section">
+  <div class="section-title">
+    <h2>Featured Projects</h2>
+    <p>A glimpse of our work across different regions.</p>
+  </div>
+  <div class="showcase-grid">
+    <div class="showcase-card">
+      <div class="showcase-visual" style="background:linear-gradient(135deg,#1a2e05,#3A4218);">🏢</div>
+      <div class="showcase-info">
+        <h4>Prishtina Residential Complex</h4>
+        <p>120-unit modular housing development — completed in 8 months with full occupancy.</p>
+      </div>
+    </div>
+    <div class="showcase-card">
+      <div class="showcase-visual" style="background:linear-gradient(135deg,#4B5320,#3A4218);">🏗️</div>
+      <div class="showcase-info">
+        <h4>Vienna Office Park</h4>
+        <p>45 modular office units in Vienna's 22nd district — sustainable, fast, and under budget.</p>
+      </div>
+    </div>
+    <div class="showcase-card">
+      <div class="showcase-visual" style="background:linear-gradient(135deg,#ff8c2e,#ff6b1a);">🏠</div>
+      <div class="showcase-info">
+        <h4>Istanbul Villa Collection</h4>
+        <p>22 luxury villas on the Asian side — traditional design meets modern prefab precision.</p>
+      </div>
+    </div>
+    <div class="showcase-card">
+      <div class="showcase-visual" style="background:linear-gradient(135deg,#ffc74d,#ff8c2e);">🏘️</div>
+      <div class="showcase-info">
+        <h4>Zürich Lakeside Homes</h4>
+        <p>12 premium eco-homes near Lake Zürich — LEED-certified with net-zero energy targets.</p>
+      </div>
+    </div>
+    <div class="showcase-card">
+      <div class="showcase-visual" style="background:linear-gradient(135deg,#d4380d,#8b1a0a);">🏬</div>
+      <div class="showcase-info">
+        <h4>Tiranë Commercial Hub</h4>
+        <p>Mixed-use complex with 35 residential units above retail — completed Q4 2025.</p>
+      </div>
+    </div>
+    <div class="showcase-card">
+      <div class="showcase-visual" style="background:linear-gradient(135deg,#8b1a0a,#4a1008);">🏗️</div>
+      <div class="showcase-info">
+        <h4>Munich Innovation Center</h4>
+        <p>30-unit tech campus with prefab laboratories — delivered 30% faster than traditional build.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+<footer>&copy; 2026 InstaBuild. All rights reserved.</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script>
+(function() {
+  const map = L.map('buildMap', {
+    scrollWheelZoom: false,
+    zoomControl: true
+  }).setView([47.5, 18], 5);
+
+  // Solid black base
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+    attribution: '', maxZoom: 18
+  }).addTo(map);
+
+  const heatData = [
+    [42.6629,21.1655,1.00],[42.6650,21.1620,0.95],[42.6600,21.1700,0.90],
+    [42.6680,21.1600,0.85],[42.6550,21.1680,0.82],[42.6700,21.1550,0.78],
+    [42.6580,21.1750,0.75],[42.6720,21.1580,0.72],[42.6500,21.1720,0.68],
+    [42.6610,21.1630,0.88],[42.6630,21.1670,0.84],[42.6670,21.1570,0.76],
+    [42.6560,21.1610,0.70],[42.6710,21.1640,0.65],[42.6530,21.1730,0.60],
+    [42.6480,21.1660,0.55],[42.6780,21.1520,0.50],[42.6750,21.1750,0.45],
+    [42.6800,21.1400,0.42],[42.6900,21.1500,0.38],
+    [42.6350,21.0950,0.40],[42.6320,21.0900,0.35],[42.6380,21.1000,0.32],
+    [42.5200,21.1250,0.25],[42.5180,21.1300,0.22],
+    [42.9100,21.1900,0.28],[42.9080,21.1950,0.24],
+    [42.3700,21.1550,0.20],[42.4600,21.4700,0.18],
+    [42.2139,20.7397,0.15],[42.6600,20.2900,0.12],[42.8833,20.8667,0.10],[42.3800,20.4300,0.08],
+    [41.0082,28.9784,0.35],[41.0150,28.9850,0.32],[41.0050,28.9700,0.28],
+    [41.0120,28.9750,0.25],[41.0200,28.9900,0.22],
+    [39.9334,32.8597,0.22],[39.9400,32.8650,0.18],[39.9280,32.8500,0.15],
+    [48.2082,16.3738,0.30],[48.2150,16.3800,0.28],[48.2000,16.3700,0.25],
+    [48.2100,16.3650,0.22],[48.2200,16.3850,0.18],
+    [41.3275,19.8187,0.24],[41.3300,19.8250,0.20],[41.3200,19.8100,0.17],[41.3350,19.8200,0.15],
+    [48.1351,11.5820,0.22],[48.1400,11.5900,0.18],[48.1300,11.5750,0.15],
+    [52.5200,13.4050,0.16],[52.5250,13.4100,0.12],
+    [47.3769,8.5417,0.17],[47.3800,8.5500,0.13],[47.3700,8.5350,0.10],
+    [41.9973,21.4280,0.14],[42.0000,21.4350,0.10],
+    [45.4642,9.1900,0.10],[45.4700,9.1950,0.07],
+    [42.4300,18.7000,0.08],[42.4350,18.7100,0.05],
+  ];
+
+  L.heatLayer(heatData, {
+    radius: 30, blur: 14, maxZoom: 10, max: 1.0,
+    gradient: {
+      0.00:'transparent',
+      0.03:'#2d0806',
+      0.08:'#6b1208',
+      0.16:'#b81c0a',
+      0.28:'#e8380d',
+      0.42:'#ff5c14',
+      0.58:'#ff8220',
+      0.75:'#ffa833',
+      0.90:'#ffcc44',
+      1.00:'#ffe866'
+    }
+  }).addTo(map);
+
+  const cities = [
+    {name:'Prishtina (HQ)',lat:42.6629,lng:21.1655,r:7},
+    {name:'Istanbul',lat:41.0082,lng:28.9784,r:5},
+    {name:'Vienna',lat:48.2082,lng:16.3738,r:5},
+    {name:'Tiranë',lat:41.3275,lng:19.8187,r:4},
+    {name:'Munich',lat:48.1351,lng:11.5820,r:4},
+    {name:'Zürich',lat:47.3769,lng:8.5417,r:3},
+    {name:'Skopje',lat:41.9973,lng:21.4280,r:3},
+    {name:'Milan',lat:45.4642,lng:9.1900,r:3},
+  ];
+
+  cities.forEach(c => {
+    L.circleMarker([c.lat,c.lng],{
+      radius:c.r,color:'#fff',fillColor:'#d4380d',fillOpacity:0.9,weight:2
+    }).addTo(map).bindTooltip(c.name,{
+      permanent:false,direction:'top',className:'map-tooltip',offset:[0,-8]
+    });
+  });
+})();
+</script>
+</body>
+</html>

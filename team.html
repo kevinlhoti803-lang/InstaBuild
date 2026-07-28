@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InstaBuild — Our Team</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  :root {
+    --green: #4B5320;
+    --green-dark: #3A4218;
+    --green-light: #F0F2E8;
+    --white: #FFFFFF;
+    --off-white: #F8FAF9;
+    --text: #1a1a1a;
+    --text-light: #555;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--white);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Nav ── */
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 80px;
+    background: var(--green);
+    border-radius: 0 0 40px 40px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 8px 40px rgba(75,83,32,0.25);
+  }
+  nav::after {
+    content: '';
+    position: absolute;
+    bottom: -12px;
+    left: 5%;
+    width: 90%;
+    height: 20px;
+    background: var(--green);
+    border-radius: 0 0 60% 60%;
+    opacity: 0.15;
+    z-index: -1;
+  }
+  .logo {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+  .logo-img { height: 36px; width: auto; }
+  .logo span { color: rgba(255,255,255,0.8); }
+  .nav-links { display: flex; gap: 36px; list-style: none; align-items: center; }
+  .nav-links a {
+    text-decoration: none;
+    color: rgba(255,255,255,0.85);
+    font-weight: 500;
+    font-size: 15px;
+    transition: all 0.25s;
+    padding: 8px 16px;
+    border-radius: 8px;
+  }
+  .nav-links a:hover { color: #fff; background: rgba(255,255,255,0.12); }
+  .nav-links a.active { color: #fff; background: rgba(255,255,255,0.2); font-weight: 600; }
+
+  /* ── Hero ── */
+  .page-hero {
+    background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
+    padding: 60px 80px;
+    text-align: center;
+    color: #fff;
+  }
+  .page-hero h1 {
+    font-size: 46px;
+    font-weight: 900;
+    letter-spacing: -1.5px;
+    margin-bottom: 10px;
+  }
+  .page-hero p {
+    font-size: 16px;
+    opacity: 0.7;
+    max-width: 550px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  section { padding: 80px; }
+
+  .section-title {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+  .section-title h2 {
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+  .section-title p {
+    font-size: 15px;
+    color: var(--text-light);
+  }
+
+  /* ── CEO Section ── */
+  .ceo-section {
+    background: var(--off-white);
+  }
+  .ceo-card {
+    display: flex;
+    max-width: 1000px;
+    margin: 0 auto;
+    background: var(--white);
+    border-radius: 24px;
+    overflow: hidden;
+    border: 1px solid rgba(75,83,32,0.1);
+    box-shadow: 0 20px 60px rgba(75,83,32,0.08);
+  }
+  .ceo-photo {
+    width: 340px;
+    min-height: 400px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  .ceo-info {
+    padding: 44px 36px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .ceo-badge {
+    display: inline-block;
+    background: var(--green-light);
+    color: var(--green);
+    padding: 6px 16px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 12px;
+    align-self: flex-start;
+  }
+  .ceo-info h2 {
+    font-size: 30px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    margin-bottom: 4px;
+  }
+  .ceo-info .ceo-role {
+    font-size: 16px;
+    color: var(--green);
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  .ceo-info .ceo-quote {
+    font-size: 17px;
+    color: var(--text);
+    font-weight: 500;
+    line-height: 1.7;
+    font-style: italic;
+    margin-bottom: 16px;
+    padding-left: 16px;
+    border-left: 3px solid var(--green);
+  }
+  .ceo-info p {
+    font-size: 14px;
+    color: var(--text-light);
+    line-height: 1.8;
+  }
+
+  /* ── Team Grid ── */
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 28px;
+    max-width: 1300px;
+    margin: 0 auto;
+  }
+  .team-card {
+    background: var(--white);
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(75,83,32,0.08);
+    transition: all 0.35s;
+  }
+  .team-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 50px rgba(75,83,32,0.12);
+    border-color: rgba(75,83,32,0.2);
+  }
+  .team-photo {
+    width: 100%;
+    height: 280px;
+    object-fit: cover;
+    display: block;
+  }
+  .team-info {
+    padding: 24px 20px;
+    text-align: center;
+  }
+  .team-info h3 {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 2px;
+    letter-spacing: -0.3px;
+  }
+  .team-info .role {
+    font-size: 13px;
+    color: var(--green);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .team-info p {
+    font-size: 13px;
+    color: var(--text-light);
+    line-height: 1.6;
+  }
+
+  .section-divider { width: 100%; height: 10px; background: var(--green); }
+  footer {
+    padding: 24px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-light);
+    border-top: 1px solid rgba(0,0,0,0.06);
+  }
+
+  @media (max-width: 900px) {
+    nav { padding: 14px 20px; }
+    .page-hero { padding: 40px 20px; }
+    .page-hero h1 { font-size: 30px; }
+    section { padding: 50px 20px; }
+    .ceo-card { flex-direction: column; }
+    .ceo-photo { width: 100%; min-height: 320px; }
+    .ceo-info { padding: 28px 22px; }
+    .team-grid { grid-template-columns: repeat(2, 1fr); }
+    .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">
+    <img src="logo.png" alt="InstaBuild" class="logo-img">
+    Insta<span>Build</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="build.html">Build</a></li>
+    <li><a href="team.html" class="active">Team</a></li>
+    <li><a href="index.html#3d">See Us in 3D</a></li>
+  </ul>
+</nav>
+
+<section class="page-hero">
+  <h1>Meet Our Team</h1>
+  <p>The people behind every InstaBuild project — 200+ professionals driven by quality, precision, and innovation.</p>
+</section>
+
+<!-- CEO -->
+<section class="ceo-section">
+  <div class="section-title">
+    <h2>Leadership</h2>
+    <p>The vision and drive behind InstaBuild's success.</p>
+  </div>
+  <div class="ceo-card">
+    <img src="mentori.webp" alt="Mentor — Founder & CEO" class="ceo-photo">
+    <div class="ceo-info">
+      <span class="ceo-badge">Founder & CEO</span>
+      <h2>Mentor</h2>
+      <div class="ceo-role">Visionary Leader · Industry Pioneer</div>
+      <div class="ceo-quote">"Building isn't just about structures — it's about creating the spaces where life happens. Every home we build carries that responsibility."</div>
+      <p>Mentor founded InstaBuild in 2010 with nothing but a bold vision and an unshakable belief that modular construction could change the industry. Under his leadership, the company has grown from a small 5-person team in Prishtina to an internationally recognized firm operating across 9 countries with over 200 employees.</p>
+      <p style="margin-top:12px;">His hands-on approach, strategic foresight, and commitment to quality have earned InstaBuild a reputation as one of Europe's most trusted modular construction companies. Mentor personally reviews every major project, ensuring the founding principles of transparency, speed, and craftsmanship are never compromised. His leadership style — empowering his team while maintaining the highest standards — has created a culture of excellence that defines InstaBuild at every level.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Team -->
+<section>
+  <div class="section-title">
+    <h2>Our Team</h2>
+    <p>Engineers, architects, project managers, and builders — the experts who make it happen.</p>
+  </div>
+  <div class="team-grid">
+    <div class="team-card">
+      <img src="Besart-Hajrizi.jpg" alt="Besart Hajrizi" class="team-photo">
+      <div class="team-info">
+        <h3>Besart Hajrizi</h3>
+        <div class="role">Head of Engineering</div>
+        <p>Leads structural design and engineering across all projects. 12+ years of experience in modular construction systems and seismic-resistant design.</p>
+      </div>
+    </div>
+    <div class="team-card">
+      <img src="Artan-Djemajlji.jpg" alt="Artan Djemajlji" class="team-photo">
+      <div class="team-info">
+        <h3>Artan Djemajlji</h3>
+        <div class="role">Project Director</div>
+        <p>Oversees all active construction sites with precision scheduling. Known for delivering complex projects ahead of deadline without sacrificing quality.</p>
+      </div>
+    </div>
+    <div class="team-card">
+      <img src="Drin-Kelmendi.jpg" alt="Drin Kelmendi" class="team-photo">
+      <div class="team-info">
+        <h3>Drin Kelmendi</h3>
+        <div class="role">Lead Architect</div>
+        <p>Designs InstaBuild's signature modular layouts. Combines modern aesthetics with functional living spaces that maximize every square meter.</p>
+      </div>
+    </div>
+    <div class="team-card">
+      <img src="Arta-Pllana.jpg" alt="Arta Pllana" class="team-photo">
+      <div class="team-info">
+        <h3>Arta Pllana</h3>
+        <div class="role">Operations Manager</div>
+        <p>Manages logistics, supply chain, and factory production. Her systems ensure materials arrive exactly when needed — every single time.</p>
+      </div>
+    </div>
+    <div class="team-card">
+      <img src="Diedon-Kica.jpg" alt="Diedon Kica" class="team-photo">
+      <div class="team-info">
+        <h3>Diedon Kica</h3>
+        <div class="role">Quality Assurance Lead</div>
+        <p>Inspects every module before it leaves the factory. His meticulous standards are why InstaBuild maintains a 98% client satisfaction rate.</p>
+      </div>
+    </div>
+    <div class="team-card">
+      <img src="Ibrahim-Ibrahimi.jpg" alt="Ibrahim Ibrahimi" class="team-photo">
+      <div class="team-info">
+        <h3>Ibrahim Ibrahimi</h3>
+        <div class="role">Site Supervisor</div>
+        <p>Runs on-site assembly teams with efficiency and safety-first leadership. Has personally overseen 150+ successful project completions.</p>
+      </div>
+    </div>
+    <div class="team-card">
+      <img src="Besnik-Pllana.jpg" alt="Besnik Pllana" class="team-photo">
+      <div class="team-info">
+        <h3>Besnik Pllana</h3>
+        <div class="role">Client Relations Director</div>
+        <p>The bridge between InstaBuild and its clients. Ensures every client feels heard, informed, and confident throughout their project journey.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+<footer>&copy; 2026 InstaBuild. All rights reserved.</footer>
+
+</body>
+</html>

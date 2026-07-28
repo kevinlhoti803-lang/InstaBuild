@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InstaBuild — About Us</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  :root {
+    --green: #4B5320;
+    --green-dark: #3A4218;
+    --green-light: #F0F2E8;
+    --white: #FFFFFF;
+    --off-white: #F8FAF9;
+    --text: #1a1a1a;
+    --text-light: #555;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--white);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Nav ── */
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 80px;
+    background: var(--green);
+    border-radius: 0 0 40px 40px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 8px 40px rgba(75,83,32,0.25);
+  }
+  nav::after {
+    content: '';
+    position: absolute;
+    bottom: -12px;
+    left: 5%;
+    width: 90%;
+    height: 20px;
+    background: var(--green);
+    border-radius: 0 0 60% 60%;
+    opacity: 0.15;
+    z-index: -1;
+  }
+  .logo {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+  .logo-img { height: 36px; width: auto; }
+  .logo span { color: rgba(255,255,255,0.8); }
+  .nav-links { display: flex; gap: 36px; list-style: none; align-items: center; }
+  .nav-links a {
+    text-decoration: none;
+    color: rgba(255,255,255,0.85);
+    font-weight: 500;
+    font-size: 15px;
+    transition: all 0.25s;
+    padding: 8px 16px;
+    border-radius: 8px;
+  }
+  .nav-links a:hover { color: #fff; background: rgba(255,255,255,0.12); }
+  .nav-links a.active { color: #fff; background: rgba(255,255,255,0.2); font-weight: 600; }
+
+  /* ── Hero Strip ── */
+  .about-hero {
+    background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
+    padding: 60px 80px;
+    text-align: center;
+    color: #fff;
+  }
+  .about-hero h1 {
+    font-size: 48px;
+    font-weight: 900;
+    letter-spacing: -1.5px;
+    margin-bottom: 10px;
+  }
+  .about-hero p {
+    font-size: 17px;
+    opacity: 0.75;
+    max-width: 650px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  section { padding: 80px; }
+  .section-header {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+  .section-header h2 {
+    font-size: 40px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 12px;
+  }
+  .section-header p {
+    font-size: 16px;
+    color: var(--text-light);
+    max-width: 550px;
+    margin: 0 auto;
+  }
+
+  /* ── Story ── */
+  .story-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .story-text h3 {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 16px;
+  }
+  .story-text p {
+    font-size: 16px;
+    color: var(--text-light);
+    line-height: 1.8;
+    margin-bottom: 14px;
+  }
+  .story-visual {
+    background: var(--green-light);
+    border-radius: 24px;
+    padding: 60px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .story-visual .year {
+    font-size: 100px;
+    font-weight: 900;
+    color: var(--green);
+    opacity: 0.15;
+    line-height: 1;
+  }
+  .story-visual .label {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--green-dark);
+    margin-top: -10px;
+  }
+
+  /* ── Values ── */
+  .values-section {
+    background: var(--off-white);
+  }
+  .values-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .value-card {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 40px 30px;
+    text-align: center;
+    border: 1px solid rgba(75,83,32,0.06);
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .value-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--green);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .value-card:hover::before { opacity: 1; }
+  .value-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 50px rgba(75,83,32,0.1);
+    border-color: rgba(75,83,32,0.18);
+  }
+  .value-icon {
+    width: 68px;
+    height: 68px;
+    background: linear-gradient(135deg, var(--green), var(--green-dark));
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 22px;
+  }
+  .value-icon svg { stroke: #fff; stroke-width: 1.8; }
+  .value-card h4 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    letter-spacing: -0.3px;
+  }
+  .value-card p {
+    font-size: 14px;
+    color: var(--text-light);
+    line-height: 1.7;
+  }
+
+  /* ── Timeline ── */
+  .timeline {
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+    padding-left: 40px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--green-light);
+    border-radius: 2px;
+  }
+  .timeline-item {
+    position: relative;
+    margin-bottom: 40px;
+    padding-left: 30px;
+  }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -29px;
+    top: 6px;
+    width: 14px;
+    height: 14px;
+    background: var(--green);
+    border-radius: 50%;
+    border: 3px solid var(--white);
+    box-shadow: 0 0 0 3px var(--green-light);
+  }
+  .timeline-item .year {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--green);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  .timeline-item h4 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .timeline-item p {
+    font-size: 14px;
+    color: var(--text-light);
+    line-height: 1.7;
+  }
+
+  /* ── Stats ── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .stat-card {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 32px 20px;
+    text-align: center;
+    border: 1px solid rgba(75,83,32,0.06);
+    transition: all 0.25s;
+  }
+  .stat-card:hover {
+    border-color: rgba(75,83,32,0.18);
+    box-shadow: 0 10px 30px rgba(75,83,32,0.08);
+    transform: translateY(-3px);
+  }
+  .stat-card .num {
+    font-size: 40px;
+    font-weight: 900;
+    color: var(--green);
+    letter-spacing: -1.5px;
+    margin-bottom: 4px;
+  }
+  .stat-card .label {
+    font-size: 13px;
+    color: var(--text-light);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .section-divider { width: 100%; height: 10px; background: var(--green); }
+
+  footer {
+    padding: 30px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-light);
+    background: var(--text);
+    color: rgba(255,255,255,0.5);
+  }
+
+  @media (max-width: 900px) {
+    nav { padding: 14px 20px; }
+    .about-hero { padding: 40px 20px; }
+    .about-hero h1 { font-size: 32px; }
+    section { padding: 50px 20px; }
+    .story-grid { grid-template-columns: 1fr; gap: 30px; }
+    .values-grid { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">
+    <img src="logo.png" alt="InstaBuild" class="logo-img">
+    Insta<span>Build</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="about.html" class="active">About</a></li>
+    <li><a href="build.html">Build</a></li>
+    <li><a href="team.html">Team</a></li>
+    <li><a href="index.html#3d">See Us in 3D</a></li>
+  </ul>
+</nav>
+
+<section class="about-hero">
+  <h1>About InstaBuild</h1>
+  <p>Building excellence since 2010 — from a bold idea to one of the region's most trusted construction firms.</p>
+</section>
+
+<!-- Our Story -->
+<section>
+  <div class="section-header">
+    <h2>Our Story</h2>
+    <p>How a small team with a big vision transformed modular construction.</p>
+  </div>
+  <div class="story-grid">
+    <div class="story-text">
+      <h3>From Vision to Reality</h3>
+      <p>InstaBuild was founded in 2010 with a simple yet powerful idea: make premium construction accessible, fast, and reliable for everyone. What started as a small team of 5 engineers in Prishtina has grown into one of the region's most trusted construction firms.</p>
+      <p>Over 14 years, we've completed more than 500 projects across residential, commercial, and industrial sectors — from single-family modular homes to 12-story office towers. Our secret? A relentless commitment to quality, transparent pricing, and timelines you can count on.</p>
+      <p>Today, InstaBuild operates across 9 countries with a team of 200+ professionals, all driven by the same founding vision: build better, build faster, build together.</p>
+    </div>
+    <div class="story-visual">
+      <div class="year">2010</div>
+      <div class="label">Founded in Prishtina, Kosovo</div>
+      <div style="margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div style="background:rgba(75,83,32,0.08);border-radius:12px;padding:16px;">
+          <div style="font-size:28px;font-weight:900;color:var(--green);">500+</div>
+          <div style="font-size:12px;color:var(--text-light);">Projects</div>
+        </div>
+        <div style="background:rgba(75,83,32,0.08);border-radius:12px;padding:16px;">
+          <div style="font-size:28px;font-weight:900;color:var(--green);">9</div>
+          <div style="font-size:12px;color:var(--text-light);">Countries</div>
+        </div>
+        <div style="background:rgba(75,83,32,0.08);border-radius:12px;padding:16px;">
+          <div style="font-size:28px;font-weight:900;color:var(--green);">200+</div>
+          <div style="font-size:12px;color:var(--text-light);">Team Members</div>
+        </div>
+        <div style="background:rgba(75,83,32,0.08);border-radius:12px;padding:16px;">
+          <div style="font-size:28px;font-weight:900;color:var(--green);">98%</div>
+          <div style="font-size:12px;color:var(--text-light);">Satisfaction</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Values -->
+<section class="values-section">
+  <div class="section-header">
+    <h2>What We Stand For</h2>
+    <p>The principles that guide every project we take on.</p>
+  </div>
+  <div class="values-grid">
+    <div class="value-card">
+      <div class="value-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="4" height="10" rx="1"/><rect x="10" y="4" width="4" height="13" rx="1"/><rect x="17" y="7" width="4" height="10" rx="1"/><line x1="1" y1="20" x2="23" y2="20"/></svg></div>
+      <h4>Quality First</h4>
+      <p>Every material, every joint, every finish is inspected to meet our rigorous standards. We never cut corners.</p>
+    </div>
+    <div class="value-card">
+      <div class="value-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
+      <h4>On Time, Every Time</h4>
+      <p>Modular precision means predictable timelines. When we give you a date, we mean it — no excuses, no delays.</p>
+    </div>
+    <div class="value-card">
+      <div class="value-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 2l3 7 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/></svg></div>
+      <h4>Transparent Pricing</h4>
+      <p>No hidden fees, no surprise charges. You'll know exactly what your project costs before we break ground.</p>
+    </div>
+    <div class="value-card">
+      <div class="value-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M17 8C8 10 4 16 4 16s6-4 13-2"/><path d="M12 3l2 6-6 2 2-6 2-2z"/></svg></div>
+      <h4>Sustainable Building</h4>
+      <p>We use eco-friendly materials and energy-efficient designs to build homes that are good for you and the planet.</p>
+    </div>
+    <div class="value-card">
+      <div class="value-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><rect x="2" y="4" width="20" height="16" rx="2"/><circle cx="12" cy="12" r="3"/><line x1="8" y1="2" x2="8" y2="4"/><line x1="16" y1="2" x2="16" y2="4"/></svg></div>
+      <h4>Innovation Driven</h4>
+      <p>We invest in the latest construction tech — from 3D modeling to prefab automation — to stay ahead of the curve.</p>
+    </div>
+    <div class="value-card">
+      <div class="value-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM8 14H5a2 2 0 00-2 2v3h8M16 14h3a2 2 0 012 2v3h-8"/></svg></div>
+      <h4>Client Partnership</h4>
+      <p>We don't just build for you — we build with you. Every client is a partner from concept to handover.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Timeline -->
+<section>
+  <div class="section-header">
+    <h2>Our Journey</h2>
+    <p>Key milestones from our first project to international expansion.</p>
+  </div>
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="year">2010</div>
+      <h4>Founded in Prishtina</h4>
+      <p>InstaBuild is established with a team of 5 engineers and a vision to revolutionize modular construction in Kosovo.</p>
+    </div>
+    <div class="timeline-item">
+      <div class="year">2013</div>
+      <h4>First 100 Projects</h4>
+      <p>Reached the milestone of 100 completed projects, establishing a reputation for quality and reliability across the region.</p>
+    </div>
+    <div class="timeline-item">
+      <div class="year">2016</div>
+      <h4>Factory Expansion</h4>
+      <p>Opened our first dedicated prefab manufacturing facility, tripling production capacity and reducing build times by 40%.</p>
+    </div>
+    <div class="timeline-item">
+      <div class="year">2019</div>
+      <h4>Regional Growth</h4>
+      <p>Expanded into Albania, North Macedonia, and Montenegro — bringing InstaBuild quality to new markets.</p>
+    </div>
+    <div class="timeline-item">
+      <div class="year">2022</div>
+      <h4>International Launch</h4>
+      <p>Entered Austria, Germany, and Switzerland — marking our transition from regional leader to European player.</p>
+    </div>
+    <div class="timeline-item">
+      <div class="year">2025</div>
+      <h4>500+ Projects & Growing</h4>
+      <p>Surpassed 500 completed projects, expanded into Turkey and Italy, and launched our sustainable building initiative.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<section style="background:var(--off-white);">
+  <div class="section-header">
+    <h2>InstaBuild by the Numbers</h2>
+    <p>14 years of building excellence — the results speak for themselves.</p>
+  </div>
+  <div class="stats-row">
+    <div class="stat-card"><div class="num">500+</div><div class="label">Projects Completed</div></div>
+    <div class="stat-card"><div class="num">200+</div><div class="label">Team Members</div></div>
+    <div class="stat-card"><div class="num">9</div><div class="label">Countries</div></div>
+    <div class="stat-card"><div class="num">98%</div><div class="label">Client Satisfaction</div></div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+<footer>&copy; 2026 InstaBuild. All rights reserved.</footer>
+
+</body>
+</html>
