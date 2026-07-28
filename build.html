@@ -228,16 +228,20 @@
     transform: translateY(-3px);
   }
   .country-flag {
-    width: 44px; height: 44px;
+    width: 48px; height: 48px;
     border-radius: 12px;
+    overflow: hidden;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 22px;
-    font-weight: 900;
-    color: #fff;
-    flex-shrink: 0;
-    letter-spacing: -0.5px;
+    background: var(--green-light);
+  }
+  .country-flag img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
   }
   .country-body { flex: 1; }
   .country-body .name {
@@ -350,7 +354,7 @@
     <li><a href="about.html">About</a></li>
     <li><a href="build.html" class="active">Build</a></li>
     <li><a href="team.html">Team</a></li>
-    <li><a href="index.html#3d">See Us in 3D</a></li>
+    <li><a href="3d.html">See Us in 3D</a></li>
   </ul>
 </nav>
 
@@ -384,47 +388,47 @@
   </div>
   <div class="countries-grid">
     <div class="country-card">
-      <div class="country-flag" style="background:linear-gradient(135deg,#8b1a0a,#d4380d);">KS</div>
+      <div class="country-flag"><img src="kosova.svg" alt="Kosovo"></div>
       <div class="country-body"><div class="name">Kosovo</div><div class="city">HQ · Prishtina</div></div>
       <div class="country-homes">500+</div>
     </div>
     <div class="country-card">
-      <div class="country-flag" style="background:linear-gradient(135deg,#ff6b1a,#d4380d);">TR</div>
+      <div class="country-flag"><img src="turkey.webp" alt="Turkey"></div>
       <div class="country-body"><div class="name">Turkey</div><div class="city">Istanbul · Ankara</div></div>
       <div class="country-homes">55</div>
     </div>
     <div class="country-card">
-      <div class="country-flag" style="background:linear-gradient(135deg,#ff6b1a,#d4380d);">AT</div>
+      <div class="country-flag"><img src="austria.svg" alt="Austria"></div>
       <div class="country-body"><div class="name">Austria</div><div class="city">Vienna</div></div>
       <div class="country-homes">45</div>
     </div>
     <div class="country-card">
-      <div class="country-flag" style="background:linear-gradient(135deg,#ff8c2e,#ff6b1a);">AL</div>
+      <div class="country-flag"><img src="albania.svg" alt="Albania"></div>
       <div class="country-body"><div class="name">Albania</div><div class="city">Tiranë</div></div>
       <div class="country-homes">35</div>
     </div>
     <div class="country-card">
-      <div class="country-flag" style="background:linear-gradient(135deg,#ff8c2e,#ff6b1a);">DE</div>
+      <div class="country-flag"><img src="germany.webp" alt="Germany"></div>
       <div class="country-body"><div class="name">Germany</div><div class="city">Munich · Berlin</div></div>
       <div class="country-homes">30</div>
     </div>
     <div class="country-card">
-      <div class="country-flag" style="background:linear-gradient(135deg,#ffc74d,#ff8c2e);">CH</div>
+      <div class="country-flag"><img src="swwis.png" alt="Switzerland"></div>
       <div class="country-body"><div class="name">Switzerland</div><div class="city">Zürich</div></div>
       <div class="country-homes">22</div>
     </div>
     <div class="country-card">
-      <div class="country-flag" style="background:linear-gradient(135deg,#ffc74d,#ff8c2e);">MK</div>
+      <div class="country-flag"><img src="macedonia.svg" alt="N. Macedonia"></div>
       <div class="country-body"><div class="name">N. Macedonia</div><div class="city">Skopje</div></div>
       <div class="country-homes">18</div>
     </div>
     <div class="country-card">
-      <div class="country-flag" style="background:linear-gradient(135deg,#ffc74d,#ff8c2e);">IT</div>
+      <div class="country-flag"><img src="italy.webp" alt="Italy"></div>
       <div class="country-body"><div class="name">Italy</div><div class="city">Milan</div></div>
       <div class="country-homes">12</div>
     </div>
     <div class="country-card">
-      <div class="country-flag" style="background:linear-gradient(135deg,#ffc74d,#ff8c2e);">ME</div>
+      <div class="country-flag"><img src="montenegro.svg" alt="Montenegro"></div>
       <div class="country-body"><div class="name">Montenegro</div><div class="city">Coastal Region</div></div>
       <div class="country-homes">10</div>
     </div>

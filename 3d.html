@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InstaBuild — 3D House Builder</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  :root { --green: #4B5320; --green-dark: #3A4218; }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0d0f0a;
+    overflow: hidden;
+    height: 100vh; width: 100vw;
+    user-select: none;
+  }
+
+  #canvas3d {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 1;
+    cursor: grab;
+  }
+  #canvas3d:active { cursor: grabbing; }
+  #canvas3d.placing { cursor: crosshair; }
+
+  /* ── Template Panel ── */
+  .template-panel {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  .template-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(75,83,32,0.25);
+    background: rgba(20,24,10,0.88);
+    backdrop-filter: blur(12px);
+    color: rgba(255,255,255,0.8);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    white-space: nowrap;
+  }
+  .template-btn:hover {
+    background: rgba(75,83,32,0.4);
+    border-color: rgba(184,200,118,0.5);
+    color: #fff;
+  }
+  .template-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .template-label { font-size: 11px; color: rgba(255,255,255,0.4); display: block; }
+
+  /* ── Bottom Toolbar ── */
+  .toolbar {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    gap: 10px;
+    background: rgba(20,24,10,0.92);
+    backdrop-filter: blur(16px);
+    padding: 12px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(75,83,32,0.3);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  }
+  .tool-btn {
+    padding: 10px 18px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.7);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .tool-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+  .tool-btn.active {
+    background: var(--green);
+    color: #fff;
+    border-color: var(--green);
+    box-shadow: 0 0 20px rgba(75,83,32,0.4);
+  }
+  .tool-btn.export-btn {
+    background: rgba(184,200,118,0.12);
+    border-color: rgba(184,200,118,0.25);
+  }
+  .tool-btn.export-btn:hover { background: rgba(184,200,118,0.25); }
+
+  .info-panel {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    background: rgba(20,24,10,0.88);
+    backdrop-filter: blur(12px);
+    padding: 10px 24px;
+    border-radius: 14px;
+    border: 1px solid rgba(75,83,32,0.2);
+    color: rgba(255,255,255,0.7);
+    font-size: 13px;
+    font-weight: 500;
+    pointer-events: none;
+    text-align: center;
+  }
+  .info-panel span { color: #B8C876; font-weight: 700; }
+
+  .back-link {
+    position: fixed;
+    top: 24px; left: 24px;
+    z-index: 10;
+    background: rgba(20,24,10,0.85);
+    backdrop-filter: blur(12px);
+    padding: 8px 16px;
+    border-radius: 10px;
+    border: 1px solid rgba(75,83,32,0.2);
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .back-link:hover { background: rgba(255,255,255,0.12); color: #fff; }
+</style>
+</head>
+<body>
+
+<a href="index.html" class="back-link">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15,4 7,12 15,20"/></svg>
+  Back
+</a>
+
+<div class="template-panel" id="templatePanel">
+  <div style="color:rgba(255,255,255,0.5);font-size:11px;font-weight:600;padding:0 4px 4px;text-transform:uppercase;letter-spacing:1px;">Templates</div>
+  <button class="template-btn" data-template="studio">
+    <span class="template-icon" style="background:rgba(75,83,32,0.4);">▢</span>
+    <span>Studio<span class="template-label">4×4m · 1 room</span></span>
+  </button>
+  <button class="template-btn" data-template="rectangle">
+    <span class="template-icon" style="background:rgba(75,83,32,0.5);">▭</span>
+    <span>Rectangle<span class="template-label">6×4m · Open plan</span></span>
+  </button>
+  <button class="template-btn" data-template="lshape">
+    <span class="template-icon" style="background:rgba(75,83,32,0.6);">⌐</span>
+    <span>L-Shape<span class="template-label">6×6m · 2 rooms</span></span>
+  </button>
+  <button class="template-btn" data-template="ushape">
+    <span class="template-icon" style="background:rgba(75,83,32,0.7);">⊏</span>
+    <span>U-Shape<span class="template-label">8×6m · Courtyard</span></span>
+  </button>
+  <button class="template-btn" data-template="twoRoom">
+    <span class="template-icon" style="background:rgba(75,83,32,0.8);">◫</span>
+    <span>Two Room<span class="template-label">8×5m · Divided</span></span>
+  </button>
+</div>
+
+<div class="info-panel" id="info">
+  <span>Right-click + drag</span> to orbit &bull; Pick a <span>template</span> or <span>Add Wall</span> to start
+</div>
+
+<div class="toolbar">
+  <button class="tool-btn active" id="btnOrbit">Orbit</button>
+  <button class="tool-btn" id="btnAddWall">Add Wall</button>
+  <button class="tool-btn" id="btnCeiling">Ceiling</button>
+  <button class="tool-btn" id="btnDelete">Delete</button>
+  <button class="tool-btn" id="btnReset">Reset</button>
+  <button class="tool-btn export-btn" id="btnExport">Export 3D</button>
+</div>
+
+<canvas id="canvas3d"></canvas>
+
+<script type="importmap">
+{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+
+const canvas = document.getElementById('canvas3d');
+const info = document.getElementById('info');
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#1a1d12');
+scene.fog = new THREE.Fog('#1a1d12', 25, 90);
+
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.5, 200);
+camera.position.set(18, 16, 18);
+camera.lookAt(0, 0, 0);
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 0, 0);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minDistance = 4;
+controls.maxDistance = 50;
+controls.maxPolarAngle = Math.PI / 2.1;
+controls.mouseButtons = { LEFT: null, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE };
+controls.update();
+
+// Lighting
+scene.add(new THREE.AmbientLight('#c8d6c0', 1.2));
+const sun = new THREE.DirectionalLight('#fff8e8', 4);
+sun.position.set(20, 30, 10);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.near = 0.5; sun.shadow.camera.far = 100;
+sun.shadow.camera.left = -35; sun.shadow.camera.right = 35;
+sun.shadow.camera.top = 35; sun.shadow.camera.bottom = -35;
+sun.shadow.bias = -0.0001;
+scene.add(sun);
+const fillLight = new THREE.DirectionalLight('#b8c8b0', 0.8);
+fillLight.position.set(-10, 5, -5);
+scene.add(fillLight);
+
+// Ground
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(40, 40),
+  new THREE.MeshStandardMaterial({ color: '#2a3020', roughness: 0.9 })
+);
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+scene.add(new THREE.GridHelper(40, 40, '#3a4428', '#2a3020').translateY(0.01));
+
+// Materials
+const WALL_H = 3, WALL_T = 0.4;
+const matWall = new THREE.MeshStandardMaterial({ color: '#8B9A30', roughness: 0.45, metalness: 0.05 });
+const matHover = new THREE.MeshStandardMaterial({ color: '#ff5c5c', roughness: 0.45, metalness: 0.05, emissive:'#ff2222', emissiveIntensity:0.3 });
+const matPreview = new THREE.MeshStandardMaterial({ color: '#B8C876', roughness: 0.3, metalness: 0.05, transparent:true, opacity:0.55 });
+const matCeiling = new THREE.MeshStandardMaterial({ color: '#6B7230', roughness: 0.6, metalness: 0.05 });
+
+// State
+let mode = 'orbit';
+let walls = [];
+let ceilingMesh = null;
+let previewWall = null;
+let wallStart = null;
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+const SNAP = 1;
+function snap(v) { return Math.round(v / SNAP) * SNAP; }
+
+// ── Wall System ──
+function getAllEndpoints() {
+  const pts = [];
+  walls.forEach(w => {
+    const d = w.userData;
+    pts.push({ x: d.startX, z: d.startZ }, { x: d.endX, z: d.endZ });
+  });
+  return pts;
+}
+
+function findSnapPoint(x, z) {
+  const eps = getAllEndpoints();
+  let best = null, bestDist = 1.2;
+  eps.forEach(p => {
+    const d = Math.sqrt((p.x-x)**2 + (p.z-z)**2);
+    if (d < bestDist) { bestDist = d; best = p; }
+  });
+  return best;
+}
+
+function createWall(sx, sz, ex, ez, mat = matWall) {
+  const dx = ex - sx, dz = ez - sz;
+  const len = Math.sqrt(dx*dx + dz*dz);
+  if (len < 0.3) return null;
+  const geo = new THREE.BoxGeometry(len, WALL_H, WALL_T);
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.set((sx+ex)/2, WALL_H/2, (sz+ez)/2);
+  mesh.rotation.y = Math.atan2(dx, dz);
+  mesh.castShadow = true; mesh.receiveShadow = true;
+  mesh.userData = { startX: sx, startZ: sz, endX: ex, endZ: ez, isWall: true };
+  return mesh;
+}
+
+function removePreview() {
+  if (previewWall) { scene.remove(previewWall); previewWall.geometry?.dispose(); previewWall = null; }
+}
+
+function getGround(event) {
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  const pt = new THREE.Vector3();
+  if (raycaster.ray.intersectPlane(groundPlane, pt)) return { x: snap(pt.x), z: snap(pt.z) };
+  return null;
+}
+
+// ── Ceiling ──
+function addCeiling() {
+  removeCeiling();
+  if (walls.length === 0) return;
+  let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+  walls.forEach(w => {
+    const d = w.userData;
+    minX = Math.min(minX, d.startX, d.endX);
+    maxX = Math.max(maxX, d.startX, d.endX);
+    minZ = Math.min(minZ, d.startZ, d.endZ);
+    maxZ = Math.max(maxZ, d.startZ, d.endZ);
+  });
+  const w = maxX - minX + WALL_T, d = maxZ - minZ + WALL_T;
+  if (w < 1 || d < 1) return;
+  const geo = new THREE.BoxGeometry(w, 0.15, d);
+  ceilingMesh = new THREE.Mesh(geo, matCeiling);
+  ceilingMesh.position.set((minX+maxX)/2, WALL_H, (minZ+maxZ)/2);
+  ceilingMesh.castShadow = true; ceilingMesh.receiveShadow = true;
+  ceilingMesh.userData = { isCeiling: true };
+  scene.add(ceilingMesh);
+}
+
+function removeCeiling() {
+  if (ceilingMesh) { scene.remove(ceilingMesh); ceilingMesh.geometry?.dispose(); ceilingMesh = null; }
+}
+
+// ── Templates ──
+const templates = {
+  studio: [
+    [0,0,4,0], [4,0,4,4], [4,4,0,4], [0,4,0,0]
+  ],
+  rectangle: [
+    [0,0,6,0], [6,0,6,4], [6,4,0,4], [0,4,0,0]
+  ],
+  lshape: [
+    [0,0,6,0], [6,0,6,2], [6,2,3,2], [3,2,3,6], [3,6,0,6], [0,6,0,0]
+  ],
+  ushape: [
+    [0,0,8,0], [8,0,8,6], [8,6,6,6], [6,6,6,3], [6,3,2,3], [2,3,2,6], [2,6,0,6], [0,6,0,0]
+  ],
+  twoRoom: [
+    [0,0,8,0], [8,0,8,5], [8,5,4,5], [4,5,4,0], [4,0,0,0], [0,0,0,5], [0,5,8,5]
+  ]
+};
+
+function loadTemplate(name) {
+  resetAll();
+  const t = templates[name];
+  if (!t) return;
+  t.forEach(([sx, sz, ex, ez]) => {
+    const wall = createWall(sx, sz, ex, ez, matWall);
+    if (wall) { scene.add(wall); walls.push(wall); }
+  });
+  // Move camera to fit
+  let minX=Infinity,maxX=-Infinity,minZ=Infinity,maxZ=-Infinity;
+  walls.forEach(w => { const d=w.userData; minX=Math.min(minX,d.startX,d.endX); maxX=Math.max(maxX,d.startX,d.endX); minZ=Math.min(minZ,d.startZ,d.endZ); maxZ=Math.max(maxZ,d.startZ,d.endZ); });
+  const cx=(minX+maxX)/2, cz=(minZ+maxZ)/2, span=Math.max(maxX-minX,maxZ-minZ);
+  controls.target.set(cx,0,cz);
+  camera.position.set(cx+span*1.2, span*0.9, cz+span*1.2);
+  camera.lookAt(cx,0,cz);
+  controls.update();
+  info.innerHTML = 'Template loaded: <span>' + name + '</span> &bull; ' + walls.length + ' walls &bull; Customize or add ceiling';
+}
+
+function resetAll() {
+  walls.forEach(w => { scene.remove(w); w.geometry?.dispose(); });
+  walls = [];
+  removeCeiling();
+  removePreview();
+  wallStart = null;
+}
+
+// ── Export 3D ──
+function exportGLB() {
+  if (walls.length === 0 && !ceilingMesh) {
+    info.innerHTML = '<span>Nothing to export!</span> Build something first';
+    return;
+  }
+  info.innerHTML = '<span>Exporting...</span>';
+  const exporter = new GLTFExporter();
+  exporter.parse(scene, (gltf) => {
+    const blob = new Blob([gltf], { type: 'application/octet-stream' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'instabuild-house.glb';
+    a.click();
+    URL.revokeObjectURL(url);
+    info.innerHTML = 'Exported as <span>instabuild-house.glb</span> &bull; Walls: ' + walls.length;
+  }, (err) => {
+    info.innerHTML = '<span>Export failed:</span> ' + err;
+  }, { binary: true });
+}
+
+// ── Canvas Events ──
+canvas.addEventListener('pointerdown', (e) => {
+  if (mode !== 'addWall' || e.button !== 0) return;
+  const pt = getGround(e); if (!pt) return;
+  let px = pt.x, pz = pt.z;
+  if (!wallStart) {
+    const sp = findSnapPoint(px, pz);
+    if (sp) { px = sp.x; pz = sp.z; }
+    wallStart = { x: px, z: pz };
+    info.innerHTML = 'Click to <span>finish wall</span> &bull; snaps to existing endpoints';
+  } else {
+    const sp = findSnapPoint(px, pz);
+    if (sp) { px = sp.x; pz = sp.z; }
+    if (px === wallStart.x && pz === wallStart.z) return;
+    const wall = createWall(wallStart.x, wallStart.z, px, pz, matWall);
+    if (wall) { scene.add(wall); walls.push(wall); }
+    removePreview(); wallStart = null;
+    info.innerHTML = 'Click to <span>start next wall</span> &bull; Walls: <span>' + walls.length + '</span>';
+  }
+});
+
+canvas.addEventListener('pointermove', (e) => {
+  if (mode === 'delete') {
+    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+    const targets = [...walls];
+    if (ceilingMesh) targets.push(ceilingMesh);
+    const hits = raycaster.intersectObjects(targets);
+    walls.forEach(w => w.material = matWall);
+    if (ceilingMesh) ceilingMesh.material = matCeiling;
+    if (hits.length > 0) hits[0].object.material = matHover;
+    return;
+  }
+  if (mode !== 'addWall' || !wallStart) return;
+  const pt = getGround(e); if (!pt) return;
+  let px = pt.x, pz = pt.z;
+  const sp = findSnapPoint(px, pz);
+  if (sp) { px = sp.x; pz = sp.z; }
+  removePreview();
+  const wall = createWall(wallStart.x, wallStart.z, px, pz, matPreview);
+  if (wall) { previewWall = wall; scene.add(previewWall); }
+});
+
+canvas.addEventListener('click', (e) => {
+  if (mode !== 'delete') return;
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  const targets = [...walls];
+  if (ceilingMesh) targets.push(ceilingMesh);
+  const hits = raycaster.intersectObjects(targets);
+  if (hits.length > 0) {
+    const obj = hits[0].object;
+    if (obj.userData.isCeiling) { removeCeiling(); info.innerHTML = 'Ceiling removed. Walls: <span>' + walls.length + '</span>'; }
+    else { scene.remove(obj); obj.geometry?.dispose(); walls = walls.filter(w => w !== obj); removeCeiling(); info.innerHTML = 'Wall deleted. Walls: <span>' + walls.length + '</span>'; }
+  }
+});
+
+// ── Buttons ──
+function setMode(newMode) {
+  mode = newMode;
+  removePreview(); wallStart = null;
+  walls.forEach(w => w.material = matWall);
+  if (ceilingMesh) ceilingMesh.material = matCeiling;
+  canvas.classList.toggle('placing', mode === 'addWall');
+  controls.mouseButtons.LEFT = (mode === 'orbit') ? THREE.MOUSE.ROTATE : null;
+  controls.mouseButtons.RIGHT = (mode === 'orbit') ? null : THREE.MOUSE.ROTATE;
+  document.querySelectorAll('.toolbar .tool-btn').forEach(b => b.classList.remove('active'));
+  if (mode === 'orbit') document.getElementById('btnOrbit').classList.add('active');
+  else if (mode === 'addWall') document.getElementById('btnAddWall').classList.add('active');
+  else if (mode === 'delete') document.getElementById('btnDelete').classList.add('active');
+  if (mode === 'orbit') info.innerHTML = '<span>Left-click + drag</span> to orbit &bull; <span>Scroll</span> to zoom &bull; Walls: <span>' + walls.length + '</span>';
+  else if (mode === 'addWall') info.innerHTML = 'Click grid to <span>start wall</span> &bull; snaps to existing &bull; Walls: <span>' + walls.length + '</span>';
+  else if (mode === 'delete') info.innerHTML = 'Click wall/ceiling to <span>delete</span> &bull; Walls: <span>' + walls.length + '</span>';
+}
+
+document.getElementById('btnOrbit').addEventListener('click', () => setMode('orbit'));
+document.getElementById('btnAddWall').addEventListener('click', () => setMode('addWall'));
+document.getElementById('btnDelete').addEventListener('click', () => setMode('delete'));
+document.getElementById('btnCeiling').addEventListener('click', () => { setMode('orbit'); addCeiling(); info.innerHTML = 'Ceiling added! Walls: <span>' + walls.length + '</span>'; });
+document.getElementById('btnReset').addEventListener('click', () => { resetAll(); setMode('orbit'); info.innerHTML = 'Cleared. Pick a <span>template</span> or build from scratch'; });
+document.getElementById('btnExport').addEventListener('click', () => exportGLB());
+
+// Template buttons
+document.querySelectorAll('.template-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const name = btn.dataset.template;
+    loadTemplate(name);
+    setMode('orbit');
+  });
+});
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
+console.log('🏗️ InstaBuild 3D Builder — Templates + Export ready');
+</script>
+
+</body>
+</html>
