@@ -32,25 +32,24 @@
   /* ── Template Panel ── */
   .template-panel {
     position: fixed;
-    top: 24px;
-    right: 24px;
+    top: 24px; right: 24px;
     z-index: 10;
     display: flex;
     flex-direction: column;
     gap: 8px;
-    max-height: 70vh;
+    max-height: 72vh;
     overflow-y: auto;
   }
   .template-btn {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 16px;
-    border-radius: 12px;
-    border: 1px solid rgba(75,83,32,0.25);
-    background: rgba(20,24,10,0.88);
-    backdrop-filter: blur(12px);
-    color: rgba(255,255,255,0.8);
+    gap: 12px;
+    padding: 12px 18px;
+    border-radius: 14px;
+    border: 1px solid rgba(75,83,32,0.2);
+    background: rgba(20,24,10,0.9);
+    backdrop-filter: blur(14px);
+    color: rgba(255,255,255,0.85);
     font-family: 'Inter', sans-serif;
     font-size: 13px;
     font-weight: 600;
@@ -63,16 +62,19 @@
     background: rgba(75,83,32,0.4);
     border-color: rgba(184,200,118,0.5);
     color: #fff;
+    transform: translateX(-3px);
   }
-  .template-icon {
-    width: 32px; height: 32px;
+  .template-preview {
+    width: 44px; height: 36px;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
     flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
   }
+  .template-preview svg { width: 100%; height: 100%; }
   .template-label { font-size: 11px; color: rgba(255,255,255,0.4); display: block; }
 
   /* ── Bottom Toolbar ── */
@@ -83,26 +85,29 @@
     transform: translateX(-50%);
     z-index: 10;
     display: flex;
-    gap: 10px;
-    background: rgba(20,24,10,0.92);
+    gap: 8px;
+    background: rgba(20,24,10,0.94);
     backdrop-filter: blur(16px);
-    padding: 12px 16px;
+    padding: 10px 14px;
     border-radius: 20px;
     border: 1px solid rgba(75,83,32,0.3);
     box-shadow: 0 12px 40px rgba(0,0,0,0.5);
   }
   .tool-btn {
-    padding: 10px 18px;
+    padding: 10px 16px;
     border-radius: 14px;
     border: 1px solid rgba(255,255,255,0.1);
     background: rgba(255,255,255,0.05);
     color: rgba(255,255,255,0.7);
     font-family: 'Inter', sans-serif;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
   .tool-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
   .tool-btn.active {
@@ -111,11 +116,10 @@
     border-color: var(--green);
     box-shadow: 0 0 20px rgba(75,83,32,0.4);
   }
-  .tool-btn.export-btn {
-    background: rgba(184,200,118,0.12);
-    border-color: rgba(184,200,118,0.25);
-  }
+  .tool-btn.export-btn { background: rgba(184,200,118,0.12); border-color: rgba(184,200,118,0.25); }
   .tool-btn.export-btn:hover { background: rgba(184,200,118,0.25); }
+  .tool-btn:disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
+  .tool-sep { width: 1px; background: rgba(255,255,255,0.1); margin: 0 4px; }
 
   .info-panel {
     position: fixed;
@@ -123,7 +127,7 @@
     left: 50%;
     transform: translateX(-50%);
     z-index: 10;
-    background: rgba(20,24,10,0.88);
+    background: rgba(20,24,10,0.9);
     backdrop-filter: blur(12px);
     padding: 10px 24px;
     border-radius: 14px;
@@ -155,6 +159,19 @@
     gap: 8px;
   }
   .back-link:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
+  .snap-indicator {
+    position: fixed;
+    pointer-events: none;
+    z-index: 5;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: rgba(184,200,118,0.8);
+    border: 2px solid #B8C876;
+    transform: translate(-50%, -50%);
+    display: none;
+    box-shadow: 0 0 12px rgba(184,200,118,0.4);
+  }
 </style>
 </head>
 <body>
@@ -167,39 +184,60 @@
 <div class="template-panel" id="templatePanel">
   <div style="color:rgba(255,255,255,0.5);font-size:11px;font-weight:600;padding:0 4px 4px;text-transform:uppercase;letter-spacing:1px;">Templates</div>
   <button class="template-btn" data-template="studio">
-    <span class="template-icon" style="background:rgba(75,83,32,0.4);">▢</span>
-    <span>Studio<span class="template-label">4×4m · 1 room</span></span>
+    <span class="template-preview" style="background:rgba(75,83,32,0.3);">
+      <svg viewBox="0 0 44 36"><rect x="4" y="2" width="36" height="32" rx="3" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"/></svg>
+    </span>
+    <span>Studio<span class="template-label">4×4m · Open plan</span></span>
   </button>
-  <button class="template-btn" data-template="rectangle">
-    <span class="template-icon" style="background:rgba(75,83,32,0.5);">▭</span>
-    <span>Rectangle<span class="template-label">6×4m · Open plan</span></span>
+  <button class="template-btn" data-template="modern">
+    <span class="template-preview" style="background:rgba(75,83,32,0.4);">
+      <svg viewBox="0 0 44 36"><rect x="2" y="2" width="40" height="32" rx="3" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"/><line x1="22" y1="16" x2="22" y2="34" stroke="rgba(255,255,255,0.25)" stroke-width="1"/></svg>
+    </span>
+    <span>Modern<span class="template-label">6×4m · 2 rooms</span></span>
+  </button>
+  <button class="template-btn" data-template="family">
+    <span class="template-preview" style="background:rgba(75,83,32,0.5);">
+      <svg viewBox="0 0 44 36"><rect x="2" y="2" width="40" height="32" rx="3" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"/><line x1="22" y1="2" x2="22" y2="34" stroke="rgba(255,255,255,0.25)" stroke-width="1"/><line x1="2" y1="17" x2="22" y2="17" stroke="rgba(255,255,255,0.25)" stroke-width="1"/></svg>
+    </span>
+    <span>Family Home<span class="template-label">6×5m · 3 rooms</span></span>
   </button>
   <button class="template-btn" data-template="lshape">
-    <span class="template-icon" style="background:rgba(75,83,32,0.6);">⌐</span>
+    <span class="template-preview" style="background:rgba(75,83,32,0.55);">
+      <svg viewBox="0 0 44 36"><path d="M2,2 L34,2 L34,12 L22,12 L22,34 L2,34 Z" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"/></svg>
+    </span>
     <span>L-Shape<span class="template-label">6×6m · 2 rooms</span></span>
   </button>
-  <button class="template-btn" data-template="ushape">
-    <span class="template-icon" style="background:rgba(75,83,32,0.7);">⊏</span>
-    <span>U-Shape<span class="template-label">8×6m · Courtyard</span></span>
-  </button>
-  <button class="template-btn" data-template="twoRoom">
-    <span class="template-icon" style="background:rgba(75,83,32,0.8);">◫</span>
-    <span>Two Room<span class="template-label">8×5m · Divided</span></span>
+  <button class="template-btn" data-template="villa">
+    <span class="template-preview" style="background:rgba(75,83,32,0.65);">
+      <svg viewBox="0 0 44 36"><rect x="2" y="2" width="40" height="32" rx="3" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"/><line x1="16" y1="2" x2="16" y2="18" stroke="rgba(255,255,255,0.25)" stroke-width="1"/><line x1="28" y1="2" x2="28" y2="18" stroke="rgba(255,255,255,0.25)" stroke-width="1"/><line x1="2" y1="18" x2="42" y2="18" stroke="rgba(255,255,255,0.25)" stroke-width="1"/></svg>
+    </span>
+    <span>Villa<span class="template-label">8×6m · 4 rooms</span></span>
   </button>
 </div>
 
 <div class="info-panel" id="info">
-  <span>Right-click + drag</span> to orbit &bull; Pick a <span>template</span> or <span>Add Wall</span> to start
+  <span>Right-click + drag</span> to orbit &bull; Pick a <span>template</span> or <span>Draw Wall</span> to start
 </div>
 
 <div class="toolbar">
-  <button class="tool-btn active" id="btnOrbit">Orbit</button>
-  <button class="tool-btn" id="btnAddWall">Add Wall</button>
-  <button class="tool-btn" id="btnCeiling">Ceiling</button>
+  <button class="tool-btn active" id="btnOrbit">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+    Orbit
+  </button>
+  <button class="tool-btn" id="btnDrawWall">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="4" y1="20" x2="20" y2="4"/><polyline points="14,4 20,4 20,10"/></svg>
+    Draw Wall
+  </button>
+  <div class="tool-sep"></div>
+  <button class="tool-btn" id="btnRoof">Roof</button>
   <button class="tool-btn" id="btnDelete">Delete</button>
+  <div class="tool-sep"></div>
+  <button class="tool-btn" id="btnUndo" disabled>Undo</button>
   <button class="tool-btn" id="btnReset">Reset</button>
   <button class="tool-btn export-btn" id="btnExport">Export 3D</button>
 </div>
+
+<div class="snap-indicator" id="snapDot"></div>
 
 <canvas id="canvas3d"></canvas>
 
@@ -214,6 +252,7 @@ import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 
 const canvas = document.getElementById('canvas3d');
 const info = document.getElementById('info');
+const snapDot = document.getElementById('snapDot');
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color('#1a1d12');
@@ -267,22 +306,138 @@ scene.add(new THREE.GridHelper(40, 40, '#3a4428', '#2a3020').translateY(0.01));
 // Materials
 const WALL_H = 3, WALL_T = 0.4;
 const matWall = new THREE.MeshStandardMaterial({ color: '#8B9A30', roughness: 0.45, metalness: 0.05 });
+const matWallInner = new THREE.MeshStandardMaterial({ color: '#F5F0E8', roughness: 0.5, metalness: 0.02 });
 const matHover = new THREE.MeshStandardMaterial({ color: '#ff5c5c', roughness: 0.45, metalness: 0.05, emissive:'#ff2222', emissiveIntensity:0.3 });
-const matPreview = new THREE.MeshStandardMaterial({ color: '#B8C876', roughness: 0.3, metalness: 0.05, transparent:true, opacity:0.55 });
+const matPreview = new THREE.MeshStandardMaterial({ color: '#B8C876', roughness: 0.3, metalness: 0.05, transparent:true, opacity:0.5 });
 const matCeiling = new THREE.MeshStandardMaterial({ color: '#6B7230', roughness: 0.6, metalness: 0.05 });
+const matFoundation = new THREE.MeshStandardMaterial({ color: '#555', roughness: 0.7, metalness: 0.05 });
+const matFloor = new THREE.MeshStandardMaterial({ color: '#c4a87c', roughness: 0.55, metalness: 0.02 });
+const matRoofDark = new THREE.MeshStandardMaterial({ color: '#4a3820', roughness: 0.5, metalness: 0.08 });
+const matWindowFrame = new THREE.MeshStandardMaterial({ color: '#3a3a3a', roughness: 0.3, metalness: 0.5 });
+const matGlass = new THREE.MeshStandardMaterial({ color: '#a8d8ea', roughness: 0.1, metalness: 0.2, transparent: true, opacity: 0.55 });
+const matWindowSill = new THREE.MeshStandardMaterial({ color: '#5a5a5a', roughness: 0.4, metalness: 0.3 });
+const matPillar = new THREE.MeshStandardMaterial({ color: '#7A8830', roughness: 0.4, metalness: 0.08 });
+const matDoorFrame = new THREE.MeshStandardMaterial({ color: '#2a2a2a', roughness: 0.25, metalness: 0.6 });
+const matDoorPanel = new THREE.MeshStandardMaterial({ color: '#4a3520', roughness: 0.5, metalness: 0.05 });
+const matDoorHandle = new THREE.MeshStandardMaterial({ color: '#c0a060', roughness: 0.2, metalness: 0.9 });
+const matCeilingTrim = new THREE.MeshStandardMaterial({ color: '#5a6028', roughness: 0.5, metalness: 0.05 });
 
 // State
 let mode = 'orbit';
 let walls = [];
+let windows = [];
+let pillars = [];
+let doors = [];
+let foundationMesh = null;
+let floorMesh = null;
 let ceilingMesh = null;
+let roofGroup = null;
+let roofType = 'flat'; // 'flat' | 'gable'
 let previewWall = null;
 let wallStart = null;
+let drawActive = false;
+let lastWallEnd = null;
+let undoStack = [];
 
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 const SNAP = 1;
 function snap(v) { return Math.round(v / SNAP) * SNAP; }
+
+// ── Undo ──
+const UndoAction = { ADD_WALL:'add_wall', REMOVE_WALL:'remove_wall', SET_ROOF:'set_roof', RESET:'reset' };
+
+function pushUndo(action, data) {
+  undoStack.push({ action, data, walls: walls.length, time: Date.now() });
+  if (undoStack.length > 50) undoStack.shift();
+  updateUndoBtn();
+}
+
+function updateUndoBtn() {
+  document.getElementById('btnUndo').disabled = undoStack.length === 0;
+}
+
+function performUndo() {
+  if (undoStack.length === 0) return;
+  const entry = undoStack.pop();
+  updateUndoBtn();
+  
+  if (entry.action === UndoAction.ADD_WALL || entry.action === UndoAction.REMOVE_WALL) {
+    const last = walls[walls.length - 1];
+    if (last) {
+      scene.remove(last);
+      last.geometry?.dispose();
+      walls.pop();
+    }
+    rebuildAll();
+    info.innerHTML = 'Undo — <span>wall removed</span> &bull; Walls: <span>' + walls.length + '</span>';
+  } else if (entry.action === UndoAction.RESET && entry.data) {
+    // Restore walls from saved data
+    resetAll(false);
+    entry.data.walls.forEach(w => {
+      const wall = createWall(w.sx, w.sz, w.ex, w.ez, matWall);
+      if (wall) { scene.add(wall); walls.push(wall); }
+    });
+    rebuildAll();
+    info.innerHTML = 'Undo reset — restored <span>' + walls.length + '</span> walls';
+  } else {
+    updateUndoBtn();
+  }
+}
+
+// ── Foundations & Floor ──
+function addFoundation() {
+  removeFoundation();
+  if (walls.length === 0) return;
+  let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+  walls.forEach(w => {
+    const d = w.userData;
+    minX = Math.min(minX, d.startX, d.endX);
+    maxX = Math.max(maxX, d.startX, d.endX);
+    minZ = Math.min(minZ, d.startZ, d.endZ);
+    maxZ = Math.max(maxZ, d.startZ, d.endZ);
+  });
+  const fw = maxX - minX + WALL_T + 0.2;
+  const fd = maxZ - minZ + WALL_T + 0.2;
+  if (fw < 1 || fd < 1) return;
+  const geo = new THREE.BoxGeometry(fw, 0.18, fd);
+  foundationMesh = new THREE.Mesh(geo, matFoundation);
+  foundationMesh.position.set((minX+maxX)/2, 0.09, (minZ+maxZ)/2);
+  foundationMesh.receiveShadow = true;
+  foundationMesh.userData = { isFoundation: true };
+  scene.add(foundationMesh);
+}
+
+function removeFoundation() {
+  if (foundationMesh) { scene.remove(foundationMesh); foundationMesh.geometry?.dispose(); foundationMesh = null; }
+}
+
+function addFloor() {
+  removeFloor();
+  if (walls.length === 0) return;
+  let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+  walls.forEach(w => {
+    const d = w.userData;
+    minX = Math.min(minX, d.startX, d.endX);
+    maxX = Math.max(maxX, d.startX, d.endX);
+    minZ = Math.min(minZ, d.startZ, d.endZ);
+    maxZ = Math.max(maxZ, d.startZ, d.endZ);
+  });
+  const fw = maxX - minX, fd = maxZ - minZ;
+  if (fw < 0.5 || fd < 0.5) return;
+  const geo = new THREE.PlaneGeometry(fw, fd);
+  floorMesh = new THREE.Mesh(geo, matFloor);
+  floorMesh.rotation.x = -Math.PI / 2;
+  floorMesh.position.set((minX+maxX)/2, 0.19, (minZ+maxZ)/2);
+  floorMesh.receiveShadow = true;
+  floorMesh.userData = { isFloor: true };
+  scene.add(floorMesh);
+}
+
+function removeFloor() {
+  if (floorMesh) { scene.remove(floorMesh); floorMesh.geometry?.dispose(); floorMesh = null; }
+}
 
 // ── Wall System ──
 function getAllEndpoints() {
@@ -330,7 +485,37 @@ function getGround(event) {
   return null;
 }
 
-// ── Ceiling ──
+function getRawGround(event) {
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  const pt = new THREE.Vector3();
+  if (raycaster.ray.intersectPlane(groundPlane, pt)) return { x: pt.x, z: pt.z };
+  return null;
+}
+
+function projectTo3D(px, pz) {
+  const vec = new THREE.Vector3(px, 0, pz);
+  vec.project(camera);
+  return {
+    x: (vec.x * 0.5 + 0.5) * window.innerWidth,
+    y: (-vec.y * 0.5 + 0.5) * window.innerHeight
+  };
+}
+
+function snapTo90(fromX, fromZ, toX, toZ) {
+  const dx = toX - fromX;
+  const dz = toZ - fromZ;
+  if (Math.abs(dx) > Math.abs(dz)) {
+    return { x: snap(toX), z: fromZ };
+  } else {
+    return { x: fromX, z: snap(toZ) };
+  }
+}
+
+// ── Ceiling / Roof ──
+const EAVE = 0.35;
+
 function addCeiling() {
   removeCeiling();
   if (walls.length === 0) return;
@@ -342,48 +527,327 @@ function addCeiling() {
     minZ = Math.min(minZ, d.startZ, d.endZ);
     maxZ = Math.max(maxZ, d.startZ, d.endZ);
   });
-  const w = maxX - minX + WALL_T, d = maxZ - minZ + WALL_T;
-  if (w < 1 || d < 1) return;
-  const geo = new THREE.BoxGeometry(w, 0.15, d);
-  ceilingMesh = new THREE.Mesh(geo, matCeiling);
-  ceilingMesh.position.set((minX+maxX)/2, WALL_H, (minZ+maxZ)/2);
-  ceilingMesh.castShadow = true; ceilingMesh.receiveShadow = true;
-  ceilingMesh.userData = { isCeiling: true };
-  scene.add(ceilingMesh);
+  const cw = maxX - minX + WALL_T + EAVE * 2;
+  const cd = maxZ - minZ + WALL_T + EAVE * 2;
+  if (cw < 1 || cd < 1) return;
+
+  const group = new THREE.Group();
+  const slabGeo = new THREE.BoxGeometry(cw, 0.15, cd);
+  const slab = new THREE.Mesh(slabGeo, matCeiling);
+  slab.position.y = WALL_H;
+  slab.castShadow = true; slab.receiveShadow = true;
+  group.add(slab);
+
+  const trimH = 0.1, trimW = 0.12;
+  ['front','back'].forEach((dir, i) => {
+    const sign = i === 0 ? 1 : -1;
+    const trim = new THREE.Mesh(new THREE.BoxGeometry(cw + trimW, trimH, trimW), matCeilingTrim);
+    trim.position.set(0, WALL_H + 0.15 + trimH/2, sign * (cd/2 + trimW/2));
+    group.add(trim);
+  });
+  ['left','right'].forEach((dir, i) => {
+    const sign = i === 0 ? -1 : 1;
+    const trim = new THREE.Mesh(new THREE.BoxGeometry(trimW, trimH, cd), matCeilingTrim);
+    trim.position.set(sign * (cw/2 + trimW/2), WALL_H + 0.15 + trimH/2, 0);
+    group.add(trim);
+  });
+
+  group.position.set((minX+maxX)/2, 0, (minZ+maxZ)/2);
+  group.userData = { isCeiling: true };
+  scene.add(group);
+  ceilingMesh = group;
 }
 
 function removeCeiling() {
-  if (ceilingMesh) { scene.remove(ceilingMesh); ceilingMesh.geometry?.dispose(); ceilingMesh = null; }
+  if (ceilingMesh) { scene.remove(ceilingMesh); ceilingMesh = null; }
+}
+
+function addGableRoof() {
+  removeRoof();
+  if (walls.length === 0) return;
+  let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+  walls.forEach(w => {
+    const d = w.userData;
+    minX = Math.min(minX, d.startX, d.endX);
+    maxX = Math.max(maxX, d.startX, d.endX);
+    minZ = Math.min(minZ, d.startZ, d.endZ);
+    maxZ = Math.max(maxZ, d.startZ, d.endZ);
+  });
+  const rw = maxX - minX + WALL_T + EAVE * 2;
+  const rd = maxZ - minZ + WALL_T + EAVE * 2;
+  if (rw < 1 || rd < 1) return;
+
+  const group = new THREE.Group();
+  const ridgeH = 1.6; // peak height above walls
+  const cx = (minX+maxX)/2, cz = (minZ+maxZ)/2;
+
+  // Two sloped roof planes
+  const roofShape = new THREE.Shape();
+  roofShape.moveTo(-rw/2, 0);
+  roofShape.lineTo(rw/2, 0);
+  roofShape.lineTo(0, ridgeH);
+  roofShape.closePath();
+
+  const extrudeSettings = { steps: 1, depth: rd, bevelEnabled: false };
+  const roofGeo = new THREE.ExtrudeGeometry(roofShape, extrudeSettings);
+  const roof = new THREE.Mesh(roofGeo, matRoofDark);
+  roof.position.set(0, WALL_H, -rd/2);
+  roof.rotation.x = 0;
+  roof.castShadow = true; roof.receiveShadow = true;
+  group.add(roof);
+
+  // Ridge cap
+  const ridgeGeo = new THREE.BoxGeometry(0.2, 0.12, rd + 0.1);
+  const ridge = new THREE.Mesh(ridgeGeo, matCeilingTrim);
+  ridge.position.set(0, WALL_H + ridgeH, 0);
+  group.add(ridge);
+
+  // Eave trim on the two long sides (front/back of gable)
+  const eaveGeo = new THREE.BoxGeometry(rw + 0.2, 0.1, 0.12);
+  const frontEave = new THREE.Mesh(eaveGeo, matCeilingTrim);
+  frontEave.position.set(0, WALL_H, rd/2 + 0.06);
+  group.add(frontEave);
+  const backEave = new THREE.Mesh(eaveGeo, matCeilingTrim);
+  backEave.position.set(0, WALL_H, -rd/2 - 0.06);
+  group.add(backEave);
+
+  group.position.set(cx, 0, cz);
+  group.userData = { isRoof: true };
+  scene.add(group);
+  roofGroup = group;
+}
+
+function removeRoof() {
+  if (roofGroup) { scene.remove(roofGroup); roofGroup = null; }
+}
+
+function applyRoof() {
+  removeCeiling();
+  removeRoof();
+  if (roofType === 'flat') {
+    addCeiling();
+  } else {
+    addGableRoof();
+  }
+}
+
+// ── Windows ──
+function createWindow(midX, midZ, angle, wallLen) {
+  const group = new THREE.Group();
+  const WW = Math.min(1.2, wallLen * 0.42);
+  const WH = 1.2;
+  const WD = 0.08;
+  const posY = 1.6;
+  const FT = 0.06;
+
+  const glassGeo = new THREE.BoxGeometry(WW - FT*2, WH - FT*2, WD * 0.3);
+  const glass = new THREE.Mesh(glassGeo, matGlass);
+  glass.position.y = posY;
+  group.add(glass);
+
+  const fW = FT, fD = WD;
+  const topBar = new THREE.Mesh(new THREE.BoxGeometry(WW, fW, fD), matWindowFrame);
+  topBar.position.set(0, posY + WH/2 - fW/2, 0);
+  group.add(topBar);
+  const sill = new THREE.Mesh(new THREE.BoxGeometry(WW + 0.1, fW * 1.5, fD + 0.04), matWindowSill);
+  sill.position.set(0, posY - WH/2 + fW*0.75, 0.03);
+  group.add(sill);
+  const leftBar = new THREE.Mesh(new THREE.BoxGeometry(fW, WH, fD), matWindowFrame);
+  leftBar.position.set(-WW/2 + fW/2, posY, 0);
+  group.add(leftBar);
+  const rightBar = new THREE.Mesh(new THREE.BoxGeometry(fW, WH, fD), matWindowFrame);
+  rightBar.position.set(WW/2 - fW/2, posY, 0);
+  group.add(rightBar);
+  const mullion = new THREE.Mesh(new THREE.BoxGeometry(fW * 0.7, WH - FT*2, WD * 0.3), matWindowFrame);
+  mullion.position.set(0, posY, 0);
+  group.add(mullion);
+  const transom = new THREE.Mesh(new THREE.BoxGeometry(WW - FT*2, fW * 0.7, WD * 0.3), matWindowFrame);
+  transom.position.set(0, posY, 0);
+  group.add(transom);
+
+  group.position.set(midX, 0, midZ);
+  group.rotation.y = angle;
+  group.userData = { isWindow: true };
+  return group;
+}
+
+function removeWindows() {
+  windows.forEach(w => { scene.remove(w); });
+  windows = [];
+}
+
+function addWindows() {
+  removeWindows();
+  if (walls.length === 0) return;
+  const candidates = [];
+  walls.forEach(w => {
+    const d = w.userData;
+    const dx = d.endX - d.startX, dz = d.endZ - d.startZ;
+    const len = Math.sqrt(dx*dx + dz*dz);
+    if (len < 2.0) return;
+    const angle = Math.atan2(dx, dz);
+    const numWindows = len >= 5 ? 2 : 1;
+    for (let i = 0; i < numWindows; i++) {
+      const t = (i + 1) / (numWindows + 1);
+      const px = d.startX + dx * t;
+      const pz = d.startZ + dz * t;
+      const nx = Math.sin(angle) * (WALL_T/2 + 0.02);
+      const nz = Math.cos(angle) * (WALL_T/2 + 0.02);
+      candidates.push({ x: px + nx, z: pz + nz, angle: angle, len: len });
+    }
+  });
+  const placed = [];
+  candidates.forEach(c => {
+    const tooClose = placed.some(p => Math.sqrt((p.x-c.x)**2 + (p.z-c.z)**2) < 0.8);
+    if (!tooClose) placed.push(c);
+  });
+  const final = placed.slice(0, 3);
+  final.forEach(c => {
+    const win = createWindow(c.x, c.z, c.angle, c.len);
+    scene.add(win);
+    windows.push(win);
+  });
+}
+
+// ── Corner Pillars ──
+function addCornerPillars() {
+  removePillars();
+  if (walls.length === 0) return;
+  const pts = new Map();
+  walls.forEach(w => {
+    const d = w.userData;
+    pts.set(d.startX + ',' + d.startZ, { x: d.startX, z: d.startZ });
+    pts.set(d.endX + ',' + d.endZ, { x: d.endX, z: d.endZ });
+  });
+  const PS = WALL_T + 0.06;
+  pts.forEach(p => {
+    const geo = new THREE.BoxGeometry(PS, WALL_H, PS);
+    const pillar = new THREE.Mesh(geo, matPillar);
+    pillar.position.set(p.x, WALL_H / 2, p.z);
+    pillar.castShadow = true; pillar.receiveShadow = true;
+    pillar.userData = { isPillar: true };
+    scene.add(pillar);
+    pillars.push(pillar);
+  });
+}
+
+function removePillars() {
+  pillars.forEach(p => { scene.remove(p); p.geometry?.dispose(); });
+  pillars = [];
+}
+
+// ── Door ──
+function createDoor(midX, midZ, angle) {
+  const group = new THREE.Group();
+  const DW = 1.0, DH = 2.2, DD = 0.1, FT = 0.07;
+  const fD = DD + 0.04;
+
+  const topF = new THREE.Mesh(new THREE.BoxGeometry(DW + FT, FT, fD), matDoorFrame);
+  topF.position.set(0, DH, 0); group.add(topF);
+  const leftF = new THREE.Mesh(new THREE.BoxGeometry(FT, DH + FT, fD), matDoorFrame);
+  leftF.position.set(-DW/2, DH/2, 0); group.add(leftF);
+  const rightF = new THREE.Mesh(new THREE.BoxGeometry(FT, DH + FT, fD), matDoorFrame);
+  rightF.position.set(DW/2, DH/2, 0); group.add(rightF);
+
+  const panelGeo = new THREE.BoxGeometry(DW - FT * 0.5, DH - FT, DD);
+  const panel = new THREE.Mesh(panelGeo, matDoorPanel);
+  panel.position.set(0, DH/2, -0.01); group.add(panel);
+
+  const handleGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.15, 8);
+  const handle = new THREE.Mesh(handleGeo, matDoorHandle);
+  handle.position.set(DW/2 - 0.1, DH/2, DD/2 + 0.02);
+  handle.rotation.x = Math.PI / 2; group.add(handle);
+
+  const transomGeo = new THREE.BoxGeometry(DW - FT * 0.5, 0.3, DD * 0.5);
+  const transom = new THREE.Mesh(transomGeo, matGlass);
+  transom.position.set(0, DH + 0.22, 0); group.add(transom);
+
+  group.position.set(midX, 0, midZ);
+  group.rotation.y = angle;
+  group.userData = { isDoor: true };
+  return group;
+}
+
+function removeDoors() {
+  doors.forEach(d => { scene.remove(d); });
+  doors = [];
+}
+
+function addDoor() {
+  removeDoors();
+  if (walls.length === 0) return;
+  let best = null, bestLen = 0;
+  walls.forEach(w => {
+    const d = w.userData;
+    const dx = d.endX - d.startX, dz = d.endZ - d.startZ;
+    const len = Math.sqrt(dx*dx + dz*dz);
+    if (len > bestLen) { bestLen = len; best = w; }
+  });
+  if (!best || bestLen < 2) return;
+  const d = best.userData;
+  const dx = d.endX - d.startX, dz = d.endZ - d.startZ;
+  const angle = Math.atan2(dx, dz);
+  const t = 1/3;
+  const px = d.startX + dx * t, pz = d.startZ + dz * t;
+  const nx = Math.sin(angle) * (WALL_T/2 + 0.02);
+  const nz = Math.cos(angle) * (WALL_T/2 + 0.02);
+  const door = createDoor(px + nx, pz + nz, angle);
+  scene.add(door);
+  doors.push(door);
+}
+
+// ── Rebuild All (after wall changes) ──
+function rebuildAll() {
+  removeFoundation(); removeFloor(); removeCeiling(); removeRoof();
+  removeWindows(); removeDoors(); removePillars();
+  addFoundation(); addFloor();
+  applyRoof();
+  addWindows(); addDoor(); addCornerPillars();
 }
 
 // ── Templates ──
 const templates = {
-  studio: [
-    [0,0,4,0], [4,0,4,4], [4,4,0,4], [0,4,0,0]
-  ],
-  rectangle: [
-    [0,0,6,0], [6,0,6,4], [6,4,0,4], [0,4,0,0]
-  ],
-  lshape: [
-    [0,0,6,0], [6,0,6,2], [6,2,3,2], [3,2,3,6], [3,6,0,6], [0,6,0,0]
-  ],
-  ushape: [
-    [0,0,8,0], [8,0,8,6], [8,6,6,6], [6,6,6,3], [6,3,2,3], [2,3,2,6], [2,6,0,6], [0,6,0,0]
-  ],
-  twoRoom: [
-    [0,0,8,0], [8,0,8,5], [8,5,4,5], [4,5,4,0], [4,0,0,0], [0,0,0,5], [0,5,8,5]
-  ]
+  studio: {
+    exterior: [[0,0,4,0],[4,0,4,4],[4,4,0,4],[0,4,0,0]],
+    interior: [],
+    label: '4×4m · Open plan'
+  },
+  modern: {
+    exterior: [[0,0,6,0],[6,0,6,4],[6,4,0,4],[0,4,0,0]],
+    interior: [[3,0,3,4]],
+    label: '6×4m · 2 rooms'
+  },
+  family: {
+    exterior: [[0,0,6,0],[6,0,6,5],[6,5,0,5],[0,5,0,0]],
+    interior: [[3,0,3,5],[0,2.5,3,2.5]],
+    label: '6×5m · 3 rooms'
+  },
+  lshape: {
+    exterior: [[0,0,6,0],[6,0,6,2],[6,2,3,2],[3,2,3,6],[3,6,0,6],[0,6,0,0]],
+    interior: [[3,2,3,6]],
+    label: '6×6m · 2 rooms'
+  },
+  villa: {
+    exterior: [[0,0,8,0],[8,0,8,6],[8,6,0,6],[0,6,0,0]],
+    interior: [[2,0,2,6],[5,0,5,6],[0,3,8,3]],
+    label: '8×6m · 4 rooms'
+  }
 };
 
 function loadTemplate(name) {
-  resetAll();
+  resetAll(false);
   const t = templates[name];
   if (!t) return;
-  t.forEach(([sx, sz, ex, ez]) => {
-    const wall = createWall(sx, sz, ex, ez, matWall);
+
+  const allWalls = [...t.exterior, ...(t.interior || [])];
+  allWalls.forEach(([sx, sz, ex, ez]) => {
+    const mat = t.interior && t.interior.some(iw => iw[0]===sx&&iw[1]===sz&&iw[2]===ex&&iw[3]===ez) ? matWallInner : matWall;
+    const wall = createWall(sx, sz, ex, ez, mat);
     if (wall) { scene.add(wall); walls.push(wall); }
   });
-  // Move camera to fit
+
+  rebuildAll();
+
   let minX=Infinity,maxX=-Infinity,minZ=Infinity,maxZ=-Infinity;
   walls.forEach(w => { const d=w.userData; minX=Math.min(minX,d.startX,d.endX); maxX=Math.max(maxX,d.startX,d.endX); minZ=Math.min(minZ,d.startZ,d.endZ); maxZ=Math.max(maxZ,d.startZ,d.endZ); });
   const cx=(minX+maxX)/2, cz=(minZ+maxZ)/2, span=Math.max(maxX-minX,maxZ-minZ);
@@ -391,80 +855,139 @@ function loadTemplate(name) {
   camera.position.set(cx+span*1.2, span*0.9, cz+span*1.2);
   camera.lookAt(cx,0,cz);
   controls.update();
-  info.innerHTML = 'Template loaded: <span>' + name + '</span> &bull; ' + walls.length + ' walls &bull; Customize or add ceiling';
+  undoStack = [];
+  updateUndoBtn();
+  info.innerHTML = 'Template: <span>' + name + '</span> &bull; ' + walls.length + ' walls &bull; ' + windows.length + ' windows &bull; ' + roofType + ' roof';
 }
 
-function resetAll() {
+// ── Reset ──
+function resetAll(saveUndo = true) {
+  if (saveUndo && walls.length > 0) {
+    const saved = walls.map(w => ({
+      sx: w.userData.startX, sz: w.userData.startZ,
+      ex: w.userData.endX, ez: w.userData.endZ
+    }));
+    pushUndo(UndoAction.RESET, { walls: saved });
+  }
   walls.forEach(w => { scene.remove(w); w.geometry?.dispose(); });
   walls = [];
-  removeCeiling();
+  removeWindows(); removeDoors(); removePillars();
+  removeFoundation(); removeFloor(); removeCeiling(); removeRoof();
   removePreview();
-  wallStart = null;
+  wallStart = null; lastWallEnd = null; drawActive = false;
 }
 
-// ── Export 3D ──
+// ── Export ──
 function exportGLB() {
-  if (walls.length === 0 && !ceilingMesh) {
-    info.innerHTML = '<span>Nothing to export!</span> Build something first';
-    return;
-  }
+  if (walls.length === 0) { info.innerHTML = '<span>Nothing to export!</span> Build something first'; return; }
   info.innerHTML = '<span>Exporting...</span>';
   const exporter = new GLTFExporter();
   exporter.parse(scene, (gltf) => {
     const blob = new Blob([gltf], { type: 'application/octet-stream' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = 'instabuild-house.glb';
-    a.click();
+    a.href = url; a.download = 'instabuild-house.glb'; a.click();
     URL.revokeObjectURL(url);
-    info.innerHTML = 'Exported as <span>instabuild-house.glb</span> &bull; Walls: ' + walls.length;
-  }, (err) => {
-    info.innerHTML = '<span>Export failed:</span> ' + err;
-  }, { binary: true });
+    info.innerHTML = 'Exported as <span>instabuild-house.glb</span> &bull; ' + walls.length + ' walls';
+  }, (err) => { info.innerHTML = '<span>Export failed:</span> ' + err; }, { binary: true });
 }
 
 // ── Canvas Events ──
 canvas.addEventListener('pointerdown', (e) => {
-  if (mode !== 'addWall' || e.button !== 0) return;
+  if (mode !== 'drawWall' || e.button !== 0) return;
   const pt = getGround(e); if (!pt) return;
   let px = pt.x, pz = pt.z;
-  if (!wallStart) {
+
+  if (!drawActive) {
     const sp = findSnapPoint(px, pz);
     if (sp) { px = sp.x; pz = sp.z; }
     wallStart = { x: px, z: pz };
-    info.innerHTML = 'Click to <span>finish wall</span> &bull; snaps to existing endpoints';
+    lastWallEnd = wallStart;
+    drawActive = true;
+    info.innerHTML = 'Drawing wall — <span>drag</span> to extend &bull; <span>Shift</span> = snap 90° &bull; Click to finish';
   } else {
+    // Finishing current wall segment
+    if (e.shiftKey) {
+      const snapped = snapTo90(lastWallEnd.x, lastWallEnd.z, px, pz);
+      px = snapped.x; pz = snapped.z;
+    }
     const sp = findSnapPoint(px, pz);
     if (sp) { px = sp.x; pz = sp.z; }
-    if (px === wallStart.x && pz === wallStart.z) return;
-    const wall = createWall(wallStart.x, wallStart.z, px, pz, matWall);
-    if (wall) { scene.add(wall); walls.push(wall); }
-    removePreview(); wallStart = null;
+    if (px === lastWallEnd.x && pz === lastWallEnd.z) { drawActive = false; return; }
+
+    const wall = createWall(lastWallEnd.x, lastWallEnd.z, px, pz, matWall);
+    if (wall) {
+      scene.add(wall); walls.push(wall);
+      pushUndo(UndoAction.ADD_WALL, null);
+    }
+    lastWallEnd = { x: px, z: pz };
+    wallStart = null;
+    removePreview();
+    rebuildAll();
+    drawActive = false;
     info.innerHTML = 'Click to <span>start next wall</span> &bull; Walls: <span>' + walls.length + '</span>';
   }
 });
 
+let lastSnapPos = null;
+
 canvas.addEventListener('pointermove', (e) => {
+  // Snap indicator
+  if (mode === 'drawWall') {
+    const raw = getRawGround(e);
+    if (raw) {
+      const sp = findSnapPoint(snap(raw.x), snap(raw.z));
+      const pos = sp || { x: snap(raw.x), z: snap(raw.z) };
+      const screen = projectTo3D(pos.x, pos.z);
+      snapDot.style.left = screen.x + 'px';
+      snapDot.style.top = screen.y + 'px';
+      snapDot.style.display = 'block';
+      if (sp) {
+        snapDot.style.background = 'rgba(184,200,118,0.9)';
+        snapDot.style.width = '18px'; snapDot.style.height = '18px';
+      } else {
+        snapDot.style.background = 'rgba(184,200,118,0.35)';
+        snapDot.style.width = '12px'; snapDot.style.height = '12px';
+      }
+      lastSnapPos = pos;
+    }
+  } else {
+    snapDot.style.display = 'none';
+  }
+
+  // Delete hover
   if (mode === 'delete') {
     mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
     raycaster.setFromCamera(mouse, camera);
     const targets = [...walls];
-    if (ceilingMesh) targets.push(ceilingMesh);
-    const hits = raycaster.intersectObjects(targets);
+    if (ceilingMesh) targets.push(...ceilingMesh.children.filter(c => c.isMesh));
+    const hits = raycaster.intersectObjects(targets, true);
     walls.forEach(w => w.material = matWall);
-    if (ceilingMesh) ceilingMesh.material = matCeiling;
-    if (hits.length > 0) hits[0].object.material = matHover;
+    if (ceilingMesh) ceilingMesh.children.forEach(c => { if (c.material) c.material = matCeiling; });
+    if (hits.length > 0) {
+      let obj = hits[0].object;
+      while (obj && !obj.userData?.isWall && !obj.userData?.isCeiling) obj = obj.parent;
+      if (obj?.material) obj.material = matHover;
+    }
     return;
   }
-  if (mode !== 'addWall' || !wallStart) return;
-  const pt = getGround(e); if (!pt) return;
-  let px = pt.x, pz = pt.z;
+
+  // Draw wall preview
+  if (mode !== 'drawWall' || !drawActive || !lastWallEnd) return;
+  const raw = getRawGround(e);
+  if (!raw) return;
+  let px = snap(raw.x), pz = snap(raw.z);
+
+  if (e.shiftKey) {
+    const snapped = snapTo90(lastWallEnd.x, lastWallEnd.z, px, pz);
+    px = snapped.x; pz = snapped.z;
+  }
   const sp = findSnapPoint(px, pz);
   if (sp) { px = sp.x; pz = sp.z; }
+
   removePreview();
-  const wall = createWall(wallStart.x, wallStart.z, px, pz, matPreview);
+  const wall = createWall(lastWallEnd.x, lastWallEnd.z, px, pz, matPreview);
   if (wall) { previewWall = wall; scene.add(previewWall); }
 });
 
@@ -474,46 +997,100 @@ canvas.addEventListener('click', (e) => {
   mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
   raycaster.setFromCamera(mouse, camera);
   const targets = [...walls];
-  if (ceilingMesh) targets.push(ceilingMesh);
-  const hits = raycaster.intersectObjects(targets);
+  if (ceilingMesh) targets.push(...ceilingMesh.children.filter(c => c.isMesh));
+  if (roofGroup) targets.push(...roofGroup.children.filter(c => c.isMesh));
+  const hits = raycaster.intersectObjects(targets, true);
   if (hits.length > 0) {
-    const obj = hits[0].object;
-    if (obj.userData.isCeiling) { removeCeiling(); info.innerHTML = 'Ceiling removed. Walls: <span>' + walls.length + '</span>'; }
-    else { scene.remove(obj); obj.geometry?.dispose(); walls = walls.filter(w => w !== obj); removeCeiling(); info.innerHTML = 'Wall deleted. Walls: <span>' + walls.length + '</span>'; }
+    let obj = hits[0].object;
+    while (obj && !obj.userData?.isWall && !obj.userData?.isCeiling && !obj.userData?.isRoof) obj = obj.parent;
+    if (!obj) return;
+    if (obj.userData.isWall) {
+      const idx = walls.indexOf(obj);
+      if (idx !== -1) {
+        scene.remove(obj); obj.geometry?.dispose();
+        walls.splice(idx, 1);
+        rebuildAll();
+        info.innerHTML = 'Wall deleted. Walls: <span>' + walls.length + '</span>';
+      }
+    } else if (obj.userData.isCeiling) {
+      removeCeiling();
+      info.innerHTML = 'Ceiling removed. Use <span>Roof</span> to re-add';
+    } else if (obj.userData.isRoof) {
+      removeRoof();
+      info.innerHTML = 'Roof removed. Use <span>Roof</span> to re-add';
+    }
+  }
+});
+
+// Prevent orbit during wall drawing
+canvas.addEventListener('pointerdown', (e) => {
+  if (mode === 'drawWall' && e.button === 0) {
+    e.stopPropagation();
+  }
+}, true);
+
+// Keyboard shortcuts
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if (mode === 'drawWall') {
+      drawActive = false; removePreview(); wallStart = null; lastWallEnd = null;
+      setMode('orbit');
+    }
+  }
+  if (e.ctrlKey && e.key === 'z') {
+    e.preventDefault();
+    performUndo();
+  }
+  if (e.key === 'r' && !e.ctrlKey && mode === 'orbit') {
+    roofType = roofType === 'flat' ? 'gable' : 'flat';
+    applyRoof();
+    info.innerHTML = 'Roof: <span>' + roofType + '</span> &bull; Press R to toggle';
   }
 });
 
 // ── Buttons ──
 function setMode(newMode) {
   mode = newMode;
-  removePreview(); wallStart = null;
+  drawActive = false; removePreview(); wallStart = null; lastWallEnd = null;
+  snapDot.style.display = 'none';
   walls.forEach(w => w.material = matWall);
-  if (ceilingMesh) ceilingMesh.material = matCeiling;
-  canvas.classList.toggle('placing', mode === 'addWall');
+  canvas.classList.toggle('placing', mode === 'drawWall');
   controls.mouseButtons.LEFT = (mode === 'orbit') ? THREE.MOUSE.ROTATE : null;
   controls.mouseButtons.RIGHT = (mode === 'orbit') ? null : THREE.MOUSE.ROTATE;
   document.querySelectorAll('.toolbar .tool-btn').forEach(b => b.classList.remove('active'));
   if (mode === 'orbit') document.getElementById('btnOrbit').classList.add('active');
-  else if (mode === 'addWall') document.getElementById('btnAddWall').classList.add('active');
+  else if (mode === 'drawWall') document.getElementById('btnDrawWall').classList.add('active');
   else if (mode === 'delete') document.getElementById('btnDelete').classList.add('active');
-  if (mode === 'orbit') info.innerHTML = '<span>Left-click + drag</span> to orbit &bull; <span>Scroll</span> to zoom &bull; Walls: <span>' + walls.length + '</span>';
-  else if (mode === 'addWall') info.innerHTML = 'Click grid to <span>start wall</span> &bull; snaps to existing &bull; Walls: <span>' + walls.length + '</span>';
-  else if (mode === 'delete') info.innerHTML = 'Click wall/ceiling to <span>delete</span> &bull; Walls: <span>' + walls.length + '</span>';
+
+  if (mode === 'orbit')
+    info.innerHTML = '<span>Left-click + drag</span> to orbit &bull; <span>R</span> toggle roof &bull; Walls: <span>' + walls.length + '</span>';
+  else if (mode === 'drawWall')
+    info.innerHTML = 'Click to <span>start wall</span> &bull; <span>Shift</span>=snap 90° &bull; Click endpoint to chain &bull; Esc to cancel';
+  else if (mode === 'delete')
+    info.innerHTML = 'Click wall/roof to <span>delete</span> &bull; Walls: <span>' + walls.length + '</span>';
 }
 
 document.getElementById('btnOrbit').addEventListener('click', () => setMode('orbit'));
-document.getElementById('btnAddWall').addEventListener('click', () => setMode('addWall'));
+document.getElementById('btnDrawWall').addEventListener('click', () => setMode('drawWall'));
 document.getElementById('btnDelete').addEventListener('click', () => setMode('delete'));
-document.getElementById('btnCeiling').addEventListener('click', () => { setMode('orbit'); addCeiling(); info.innerHTML = 'Ceiling added! Walls: <span>' + walls.length + '</span>'; });
-document.getElementById('btnReset').addEventListener('click', () => { resetAll(); setMode('orbit'); info.innerHTML = 'Cleared. Pick a <span>template</span> or build from scratch'; });
+document.getElementById('btnRoof').addEventListener('click', () => {
+  setMode('orbit');
+  roofType = roofType === 'flat' ? 'gable' : 'flat';
+  applyRoof();
+  info.innerHTML = 'Roof: <span>' + roofType + '</span> &bull; Press R to toggle';
+});
+document.getElementById('btnUndo').addEventListener('click', () => performUndo());
+document.getElementById('btnReset').addEventListener('click', () => {
+  resetAll(true);
+  setMode('orbit');
+  info.innerHTML = 'Cleared. Pick a <span>template</span> or build from scratch';
+});
 document.getElementById('btnExport').addEventListener('click', () => exportGLB());
 
-// Template buttons
 document.querySelectorAll('.template-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    const name = btn.dataset.template;
-    loadTemplate(name);
     setMode('orbit');
+    loadTemplate(btn.dataset.template);
   });
 });
 
@@ -529,7 +1106,7 @@ function animate() {
   renderer.render(scene, camera);
 }
 animate();
-console.log('🏗️ InstaBuild 3D Builder — Templates + Export ready');
+console.log('🏗️ InstaBuild 3D Builder v2 — drag walls, gable roof, interior rooms');
 </script>
 
 </body>

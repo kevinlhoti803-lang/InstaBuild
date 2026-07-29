@@ -328,6 +328,291 @@
     padding: 5px 12px !important;
   }
 
+  /* ── Build Your Home ── */
+  .builder-section {
+    padding: 80px;
+    background: var(--white);
+    position: relative;
+  }
+  .builder-grid {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 36px;
+    max-width: 1400px;
+    margin: 0 auto;
+    align-items: start;
+  }
+  .land-selector {
+    background: var(--off-white);
+    border-radius: 20px;
+    padding: 32px 28px;
+    border: 1px solid rgba(75,83,32,0.1);
+    position: sticky;
+    top: 120px;
+  }
+  .land-selector h3 {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .land-selector .subtitle {
+    font-size: 13px;
+    color: var(--text-light);
+    margin-bottom: 24px;
+  }
+  .select-group {
+    margin-bottom: 18px;
+  }
+  .select-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--green);
+    margin-bottom: 6px;
+  }
+  .select-group select {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1.5px solid rgba(75,83,32,0.18);
+    background: var(--white);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234B5320' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+    transition: all 0.2s;
+  }
+  .select-group select:focus {
+    outline: none;
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(75,83,32,0.1);
+  }
+  .land-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .land-opt {
+    padding: 14px 12px;
+    border-radius: 12px;
+    border: 2px solid rgba(75,83,32,0.12);
+    background: var(--white);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .land-opt:hover {
+    border-color: rgba(75,83,32,0.35);
+    background: var(--green-light);
+  }
+  .land-opt.selected {
+    border-color: var(--green);
+    background: var(--green-light);
+    color: var(--green);
+    box-shadow: 0 0 0 3px rgba(75,83,32,0.1);
+  }
+  @keyframes flashBorder {
+    0%,100% { box-shadow: 0 0 0 0 rgba(75,83,32,0); }
+    50% { box-shadow: 0 0 0 6px rgba(75,83,32,0.25); }
+  }
+  .land-opt .size {
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .land-opt .dim {
+    font-size: 11px;
+    color: var(--text-light);
+    font-weight: 500;
+  }
+  .btn-find {
+    width: 100%;
+    padding: 14px;
+    background: var(--green);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: -0.3px;
+    transition: all 0.25s;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-find:hover {
+    background: var(--green-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(75,83,32,0.25);
+  }
+  .btn-find:active {
+    transform: translateY(0);
+  }
+  .houses-panel {
+    min-height: 400px;
+  }
+  .houses-panel h3 {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .houses-panel .subtitle {
+    font-size: 13px;
+    color: var(--text-light);
+    margin-bottom: 24px;
+  }
+  .houses-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+  .house-card {
+    background: var(--white);
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1.5px solid rgba(75,83,32,0.08);
+    transition: all 0.35s;
+    position: relative;
+  }
+  .house-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 50px rgba(75,83,32,0.12);
+    border-color: rgba(75,83,32,0.2);
+  }
+  .house-visual {
+    height: 160px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .house-visual svg {
+    width: 80px;
+    height: 80px;
+    opacity: 0.9;
+  }
+  .house-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 5px 12px;
+    border-radius: 50px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge-popular {
+    background: #fff3e0;
+    color: #e65100;
+  }
+  .badge-premium {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+  .badge-value {
+    background: #e3f2fd;
+    color: #1565c0;
+  }
+  .house-info {
+    padding: 18px 18px 20px;
+  }
+  .house-info h4 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    letter-spacing: -0.3px;
+  }
+  .house-info .specs {
+    font-size: 13px;
+    color: var(--text-light);
+    margin-bottom: 10px;
+    line-height: 1.5;
+  }
+  .house-info .stats-row {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 12px;
+  }
+  .house-info .stat {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--green);
+  }
+  .house-info .stat svg {
+    width: 15px;
+    height: 15px;
+    stroke: var(--green);
+  }
+  .house-info .price {
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+  .house-info .price span {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-light);
+  }
+  .no-houses {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    text-align: center;
+    color: var(--text-light);
+    border: 2px dashed rgba(75,83,32,0.15);
+    border-radius: 20px;
+    background: var(--off-white);
+  }
+  .no-houses svg {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 16px;
+    stroke: rgba(75,83,32,0.3);
+  }
+  .no-houses p {
+    font-size: 15px;
+    max-width: 300px;
+    line-height: 1.6;
+  }
+  .no-houses p strong {
+    color: var(--green);
+  }
+
   @media (max-width: 900px) {
     nav { padding: 14px 20px; }
     .page-hero { padding: 36px 20px 32px; }
@@ -338,6 +623,10 @@
     .countries-grid { grid-template-columns: 1fr 1fr; }
     .showcase-section { padding: 40px 20px; }
     .showcase-grid { grid-template-columns: 1fr; }
+    .builder-section { padding: 40px 20px; }
+    .builder-grid { grid-template-columns: 1fr; }
+    .houses-grid { grid-template-columns: 1fr; }
+    .land-selector { position: static; }
     .nav-links { display: none; }
   }
 </style>
@@ -380,6 +669,90 @@
   <div class="stat-item"><div class="num">14</div><div class="label">Years Active</div></div>
   <div class="stat-item"><div class="num">98%</div><div class="label">Satisfaction</div></div>
 </div>
+
+<!-- ── Build Your Home ── -->
+<section class="builder-section">
+  <div class="section-title">
+    <h2>Build Your Home</h2>
+    <p>Select your land and we'll show you the perfect house designs.</p>
+  </div>
+  <div class="builder-grid">
+    <div class="land-selector">
+      <h3>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4B5320" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+        Select Your Land
+      </h3>
+      <p class="subtitle">Choose your plot and we'll match the best homes.</p>
+
+      <div class="select-group">
+        <label>Country</label>
+        <select id="landCountry">
+          <option value="">Any Country</option>
+          <option value="kosovo">Kosovo</option>
+          <option value="turkey">Turkey</option>
+          <option value="austria">Austria</option>
+          <option value="albania">Albania</option>
+          <option value="germany">Germany</option>
+          <option value="switzerland">Switzerland</option>
+          <option value="macedonia">N. Macedonia</option>
+          <option value="italy">Italy</option>
+          <option value="montenegro">Montenegro</option>
+        </select>
+      </div>
+
+      <label style="display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--green);margin-bottom:8px;">Plot Size</label>
+      <div class="land-options" id="landSizes">
+        <div class="land-opt" data-size="small">
+          <span class="size">300 m²</span>
+          <span class="dim">15 × 20m</span>
+        </div>
+        <div class="land-opt" data-size="medium">
+          <span class="size">500 m²</span>
+          <span class="dim">20 × 25m</span>
+        </div>
+        <div class="land-opt" data-size="large">
+          <span class="size">800 m²</span>
+          <span class="dim">25 × 32m</span>
+        </div>
+        <div class="land-opt" data-size="xlarge">
+          <span class="size">1200 m²</span>
+          <span class="dim">30 × 40m</span>
+        </div>
+      </div>
+
+      <div class="select-group">
+        <label>Terrain Type</label>
+        <select id="landTerrain">
+          <option value="">Any Terrain</option>
+          <option value="flat">Flat</option>
+          <option value="sloped">Sloped</option>
+          <option value="coastal">Coastal</option>
+          <option value="mountain">Mountain</option>
+        </select>
+      </div>
+
+      <button class="btn-find" id="btnFindHomes" onclick="findHomes()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Find Available Homes
+      </button>
+    </div>
+
+    <div class="houses-panel" id="housesPanel">
+      <h3>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4B5320" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Available Houses
+      </h3>
+      <p class="subtitle" id="housesSubtitle">Select your land above and click "Find Available Homes" to see matching designs.</p>
+      <div class="no-houses" id="noHousesMsg">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <p><strong>Choose your land</strong> — pick a country, plot size, and terrain, then we'll show you the best house designs available.</p>
+      </div>
+      <div class="houses-grid" id="housesGrid" style="display:none;"></div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
 
 <div class="content-section">
   <div class="section-title">
@@ -564,6 +937,172 @@
       permanent:false,direction:'top',className:'map-tooltip',offset:[0,-8]
     });
   });
+})();
+</script>
+
+<!-- ── Build Your Home Logic ── -->
+<script>
+(function() {
+  const sizeBtns = document.querySelectorAll('#landSizes .land-opt');
+  let selectedSize = '';
+
+  sizeBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      sizeBtns.forEach(b => b.classList.remove('selected'));
+      this.classList.add('selected');
+      selectedSize = this.dataset.size;
+    });
+  });
+
+  const houses = [
+    {
+      id:'popup28',name:'Pop-Up Studio',size:28,beds:1,baths:1,price:'€19,900',
+      desc:'Our signature 28m² modular home. Fully furnished, delivered and set up in 48 hours — no assembly needed.',
+      gradient:'linear-gradient(135deg,#4B5320,#3A4218)',badge:'Popular',badgeClass:'badge-popular',
+      lands:['small','medium','large','xlarge'],terrains:['flat','sloped','coastal','mountain'],
+      countries:['kosovo','turkey','austria','albania','germany','switzerland','macedonia','italy','montenegro'],
+      icon:'<rect x="4" y="10" width="16" height="12" rx="1"/><polygon points="2,10 12,3 22,10"/><rect x="9" y="15" width="6" height="7" rx="1"/>'
+    },
+    {
+      id:'compact45',name:'Compact One-Bedroom',size:45,beds:1,baths:1,price:'€32,500',
+      desc:'Spacious open-plan 45m² with full kitchen, living area, and dedicated bedroom. Perfect for couples or singles.',
+      gradient:'linear-gradient(135deg,#5a6a2a,#4B5320)',badge:'Value',badgeClass:'badge-value',
+      lands:['small','medium','large','xlarge'],terrains:['flat','sloped','coastal'],
+      countries:['kosovo','turkey','austria','albania','germany','switzerland','macedonia','italy','montenegro'],
+      icon:'<rect x="3" y="9" width="18" height="13" rx="1"/><polygon points="2,9 12,2 22,9"/><rect x="5" y="14" width="5" height="8" rx="1"/><rect x="14" y="15" width="5" height="7" rx="1"/>'
+    },
+    {
+      id:'family65',name:'Family Two-Bedroom',size:65,beds:2,baths:1,price:'€46,800',
+      desc:'65m² family home with two bedrooms, open living space, and a covered porch. Designed for growing families.',
+      gradient:'linear-gradient(135deg,#6b7a35,#5a6a2a)',badge:'Popular',badgeClass:'badge-popular',
+      lands:['medium','large','xlarge'],terrains:['flat','sloped','coastal'],
+      countries:['kosovo','turkey','austria','albania','germany','switzerland','macedonia','italy','montenegro'],
+      icon:'<rect x="2" y="8" width="20" height="14" rx="1"/><polygon points="1,8 12,2 23,8"/><rect x="4" y="13" width="5" height="9" rx="1"/><rect x="11" y="13" width="5" height="9" rx="1"/><rect x="18" y="15" width="3" height="7" rx="1"/>'
+    },
+    {
+      id:'premium90',name:'Premium Three-Bedroom',size:90,beds:3,baths:2,price:'€68,000',
+      desc:'90m² luxury prefab with three bedrooms, two bathrooms, walk-in closet, and a 12m² terrace.',
+      gradient:'linear-gradient(135deg,#7d8c40,#6b7a35)',badge:'Premium',badgeClass:'badge-premium',
+      lands:['large','xlarge'],terrains:['flat','coastal'],
+      countries:['kosovo','turkey','austria','germany','switzerland','italy'],
+      icon:'<rect x="2" y="7" width="20" height="15" rx="1"/><polygon points="1,7 12,1 23,7"/><rect x="4" y="13" width="4" height="9" rx="1"/><rect x="10" y="13" width="4" height="9" rx="1"/><rect x="16" y="14" width="4" height="8" rx="1"/>'
+    },
+    {
+      id:'villa120',name:'Grand Villa',size:120,beds:4,baths:2,price:'€96,000',
+      desc:'120m² executive villa — four bedrooms, double garage, garden space, and premium finishes throughout.',
+      gradient:'linear-gradient(135deg,#8fa050,#7d8c40)',badge:'Premium',badgeClass:'badge-premium',
+      lands:['xlarge'],terrains:['flat','coastal'],
+      countries:['kosovo','turkey','austria','switzerland','italy'],
+      icon:'<rect x="2" y="6" width="20" height="16" rx="1"/><polygon points="1,6 12,0 23,6"/><rect x="5" y="14" width="4" height="8" rx="1"/><rect x="11" y="14" width="4" height="8" rx="1"/><rect x="17" y="16" width="3" height="6" rx="1"/>'
+    },
+    {
+      id:'alpine55',name:'Alpine Chalet',size:55,beds:2,baths:1,price:'€52,000',
+      desc:'55m² mountain chalet with A-frame roof, wood-burning stove, and panoramic windows. Built for mountain terrain.',
+      gradient:'linear-gradient(135deg,#5a4828,#4B5320)',badge:'Premium',badgeClass:'badge-premium',
+      lands:['medium','large','xlarge'],terrains:['sloped','mountain'],
+      countries:['austria','switzerland','germany'],
+      icon:'<polygon points="2,10 12,2 22,10"/><rect x="4" y="10" width="16" height="12" rx="1"/><rect x="9" y="15" width="6" height="7" rx="1"/>'
+    },
+    {
+      id:'coastal40',name:'Coastal Bungalow',size:40,beds:1,baths:1,price:'€38,900',
+      desc:'40m² beachside bungalow with wraparound deck, large sliding doors, and hurricane-rated construction.',
+      gradient:'linear-gradient(135deg,#4a6b8a,#3a5a78)',badge:'Popular',badgeClass:'badge-popular',
+      lands:['small','medium','large'],terrains:['coastal','flat'],
+      countries:['turkey','albania','italy','montenegro'],
+      icon:'<rect x="5" y="10" width="14" height="11" rx="1"/><polygon points="4,10 12,4 20,10"/><rect x="8" y="14" width="8" height="7" rx="2"/>'
+    },
+    {
+      id:'duo85',name:'Duo-Split Home',size:85,beds:3,baths:2,price:'€74,500',
+      desc:'85m² split-level design — two floors with separate living zones. Ideal for multi-generational families.',
+      gradient:'linear-gradient(135deg,#6a5a3a,#5a4a2a)',badge:'Value',badgeClass:'badge-value',
+      lands:['large','xlarge'],terrains:['flat','sloped'],
+      countries:['kosovo','turkey','macedonia','albania'],
+      icon:'<rect x="3" y="7" width="18" height="15" rx="1"/><polygon points="2,7 12,1 22,7"/><rect x="5" y="13" width="5" height="9" rx="1"/><rect x="13" y="14" width="5" height="8" rx="1"/>'
+    }
+  ];
+
+  // Size ordering
+  const sizeOrder = ['small','medium','large','xlarge'];
+
+  function sizeFits(houseSize, selectedSize) {
+    const hIdx = sizeOrder.indexOf(houseSize);
+    const sIdx = sizeOrder.indexOf(selectedSize);
+    if (hIdx === -1 || sIdx === -1) return false;
+    return hIdx <= sIdx;
+  }
+
+  window.findHomes = function() {
+    const country = document.getElementById('landCountry').value;
+    const terrain = document.getElementById('landTerrain').value;
+    const grid = document.getElementById('housesGrid');
+    const noMsg = document.getElementById('noHousesMsg');
+    const subtitle = document.getElementById('housesSubtitle');
+
+    if (!selectedSize) {
+      // Flash the size buttons to prompt selection
+      const container = document.getElementById('landSizes');
+      container.style.animation = 'none';
+      container.offsetHeight;
+      container.style.animation = 'flashBorder 0.6s ease';
+      return;
+    }
+
+    let matches = houses.filter(h => {
+      if (!h.lands.includes(selectedSize)) return false;
+      if (country && !h.countries.includes(country)) return false;
+      if (terrain && !h.terrains.includes(terrain)) return false;
+      return true;
+    });
+
+    if (matches.length === 0) {
+      noMsg.style.display = 'flex';
+      grid.style.display = 'none';
+      noMsg.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><p>No exact matches found. <strong>Try a larger plot</strong> or adjust your filters — we build in all our operating countries.</p>';
+      const parts = [];
+      if (country) parts.push(document.getElementById('landCountry').selectedOptions[0].text);
+      if (selectedSize) parts.push(selectedSize.charAt(0).toUpperCase()+selectedSize.slice(1)+' plot');
+      subtitle.textContent = parts.length ? 'Showing results for ' + parts.join(' · ') : 'Showing all available homes';
+      return;
+    }
+
+    noMsg.style.display = 'none';
+    grid.style.display = 'grid';
+    const parts = [];
+    if (country) parts.push(document.getElementById('landCountry').selectedOptions[0].text);
+    if (selectedSize) parts.push(selectedSize.charAt(0).toUpperCase()+selectedSize.slice(1)+' plot');
+    subtitle.textContent = matches.length + ' home' + (matches.length>1?'s':'') + ' available' + (parts.length ? ' in ' + parts.join(' · ') : '');
+
+    grid.innerHTML = matches.map(h => `
+      <div class="house-card">
+        <div class="house-visual" style="background:${h.gradient};">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">${h.icon}</svg>
+          <span class="house-badge ${h.badgeClass}">${h.badge}</span>
+        </div>
+        <div class="house-info">
+          <h4>${h.name}</h4>
+          <div class="specs">${h.desc}</div>
+          <div class="stats-row">
+            <div class="stat">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+              ${h.size} m²
+            </div>
+            <div class="stat">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+              ${h.beds} bed
+            </div>
+            <div class="stat">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              ${h.baths} bath
+            </div>
+          </div>
+          <div class="price">${h.price} <span>starting</span></div>
+        </div>
+      </div>
+    `).join('');
+
+    // Scroll to results
+    grid.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  };
 })();
 </script>
 </body>
