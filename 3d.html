@@ -1,245 +1,171 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>InstaBuild — 3D House Builder</title>
+<title>InstaBuild — Professional 3D Builder</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/tweakpane@3.1.10/dist/tweakpane.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-
-  :root { --green: #4B5320; --green-dark: #3A4218; }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    font-family: 'Inter', sans-serif;
-    background: #0d0f0a;
-    overflow: hidden;
-    height: 100vh; width: 100vw;
-    user-select: none;
-  }
-
-  #canvas3d {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    z-index: 1;
-    cursor: grab;
-  }
+  * { font-family: 'Inter', sans-serif; }
+  body { margin: 0; overflow: hidden; background: #0d0f0a; }
+  #canvas3d { position: fixed; inset: 0; z-index: 1; cursor: grab; }
   #canvas3d:active { cursor: grabbing; }
-  #canvas3d.placing { cursor: crosshair; }
+  #canvas3d.placing { cursor: none; }
 
-  /* ── Template Panel ── */
-  .template-panel {
-    position: fixed;
-    top: 24px; right: 24px;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    max-height: 72vh;
-    overflow-y: auto;
+  .glass { background: rgba(20,24,10,0.92); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+
+  #sidebar {
+    position: fixed; top: 24px; left: 24px; z-index: 10;
+    display: flex; flex-direction: column; gap: 8px; max-height: 85vh; overflow-y: auto;
+    scrollbar-width: thin; scrollbar-color: rgba(75,83,32,0.3) transparent;
   }
-  .template-btn {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 18px;
-    border-radius: 14px;
+  .side-btn {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px; border-radius: 12px;
     border: 1px solid rgba(75,83,32,0.2);
-    background: rgba(20,24,10,0.9);
-    backdrop-filter: blur(14px);
-    color: rgba(255,255,255,0.85);
-    font-family: 'Inter', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-align: left;
-    white-space: nowrap;
+    background: rgba(20,24,10,0.9); backdrop-filter: blur(12px);
+    color: rgba(255,255,255,0.8); font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; white-space: nowrap;
   }
-  .template-btn:hover {
-    background: rgba(75,83,32,0.4);
-    border-color: rgba(184,200,118,0.5);
-    color: #fff;
-    transform: translateX(-3px);
+  .side-btn:hover { background: rgba(75,83,32,0.4); border-color: rgba(184,200,118,0.5); color: #fff; }
+  .side-btn.active { background: #4B5320; border-color: #4B5320; color: #fff; box-shadow: 0 0 16px rgba(75,83,32,0.35); }
+  .side-icon {
+    width: 34px; height: 28px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-size: 15px;
   }
-  .template-preview {
-    width: 44px; height: 36px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    position: relative;
-    overflow: hidden;
-  }
-  .template-preview svg { width: 100%; height: 100%; }
-  .template-label { font-size: 11px; color: rgba(255,255,255,0.4); display: block; }
+  .side-sep { height: 1px; background: rgba(255,255,255,0.08); margin: 2px 0; }
 
-  /* ── Bottom Toolbar ── */
-  .toolbar {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
-    display: flex;
-    gap: 8px;
-    background: rgba(20,24,10,0.94);
-    backdrop-filter: blur(16px);
-    padding: 10px 14px;
-    border-radius: 20px;
-    border: 1px solid rgba(75,83,32,0.3);
-    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  #infoBar {
+    position: fixed; top: 24px; left: 50%; transform: translateX(-50%); z-index: 10;
+    padding: 10px 24px; border-radius: 14px; border: 1px solid rgba(75,83,32,0.2);
+    color: rgba(255,255,255,0.65); font-size: 13px; font-weight: 500;
+    text-align: center; pointer-events: none; max-width: 520px;
   }
-  .tool-btn {
-    padding: 10px 16px;
-    border-radius: 14px;
-    border: 1px solid rgba(255,255,255,0.1);
-    background: rgba(255,255,255,0.05);
-    color: rgba(255,255,255,0.7);
-    font-family: 'Inter', sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .tool-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
-  .tool-btn.active {
-    background: var(--green);
-    color: #fff;
-    border-color: var(--green);
-    box-shadow: 0 0 20px rgba(75,83,32,0.4);
-  }
-  .tool-btn.export-btn { background: rgba(184,200,118,0.12); border-color: rgba(184,200,118,0.25); }
-  .tool-btn.export-btn:hover { background: rgba(184,200,118,0.25); }
-  .tool-btn:disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
-  .tool-sep { width: 1px; background: rgba(255,255,255,0.1); margin: 0 4px; }
 
-  .info-panel {
-    position: fixed;
-    top: 24px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
-    background: rgba(20,24,10,0.9);
-    backdrop-filter: blur(12px);
-    padding: 10px 24px;
-    border-radius: 14px;
-    border: 1px solid rgba(75,83,32,0.2);
-    color: rgba(255,255,255,0.7);
-    font-size: 13px;
-    font-weight: 500;
-    pointer-events: none;
-    text-align: center;
+  #toolbar {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); z-index: 10;
+    display: flex; gap: 6px; padding: 10px 14px; border-radius: 20px;
+    border: 1px solid rgba(75,83,32,0.3); box-shadow: 0 12px 40px rgba(0,0,0,0.5);
   }
-  .info-panel span { color: #B8C876; font-weight: 700; }
+  .tbtn {
+    padding: 9px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.7);
+    font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .tbtn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+  .tbtn.active { background: #4B5320; color: #fff; border-color: #4B5320; box-shadow: 0 0 18px rgba(75,83,32,0.4); }
+  .tbtn:disabled { opacity: 0.3; pointer-events: none; }
+  .tsep { width: 1px; background: rgba(255,255,255,0.1); margin: 0 3px; }
 
-  .back-link {
-    position: fixed;
-    top: 24px; left: 24px;
-    z-index: 10;
-    background: rgba(20,24,10,0.85);
-    backdrop-filter: blur(12px);
-    padding: 8px 16px;
-    border-radius: 10px;
-    border: 1px solid rgba(75,83,32,0.2);
-    color: rgba(255,255,255,0.7);
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 500;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .back-link:hover { background: rgba(255,255,255,0.12); color: #fff; }
-
-  .snap-indicator {
-    position: fixed;
-    pointer-events: none;
-    z-index: 5;
-    width: 16px; height: 16px;
-    border-radius: 50%;
-    background: rgba(184,200,118,0.8);
-    border: 2px solid #B8C876;
-    transform: translate(-50%, -50%);
-    display: none;
-    box-shadow: 0 0 12px rgba(184,200,118,0.4);
-  }
+  .snap-dot { position: fixed; pointer-events: none; z-index: 5; width: 14px; height: 14px; border-radius: 50%; background: rgba(184,200,118,0.9); border: 2px solid #B8C876; transform: translate(-50%,-50%); box-shadow: 0 0 14px rgba(184,200,118,0.45); display: none; }
 </style>
 </head>
-<body>
-
-<a href="index.html" class="back-link">
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15,4 7,12 15,20"/></svg>
-  Back
-</a>
-
-<div class="template-panel" id="templatePanel">
-  <div style="color:rgba(255,255,255,0.5);font-size:11px;font-weight:600;padding:0 4px 4px;text-transform:uppercase;letter-spacing:1px;">Templates</div>
-  <button class="template-btn" data-template="studio">
-    <span class="template-preview" style="background:rgba(75,83,32,0.3);">
-      <svg viewBox="0 0 44 36"><rect x="4" y="2" width="36" height="32" rx="3" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"/></svg>
-    </span>
-    <span>Studio<span class="template-label">4×4m · Open plan</span></span>
-  </button>
-  <button class="template-btn" data-template="modern">
-    <span class="template-preview" style="background:rgba(75,83,32,0.4);">
-      <svg viewBox="0 0 44 36"><rect x="2" y="2" width="40" height="32" rx="3" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"/><line x1="22" y1="16" x2="22" y2="34" stroke="rgba(255,255,255,0.25)" stroke-width="1"/></svg>
-    </span>
-    <span>Modern<span class="template-label">6×4m · 2 rooms</span></span>
-  </button>
-  <button class="template-btn" data-template="family">
-    <span class="template-preview" style="background:rgba(75,83,32,0.5);">
-      <svg viewBox="0 0 44 36"><rect x="2" y="2" width="40" height="32" rx="3" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"/><line x1="22" y1="2" x2="22" y2="34" stroke="rgba(255,255,255,0.25)" stroke-width="1"/><line x1="2" y1="17" x2="22" y2="17" stroke="rgba(255,255,255,0.25)" stroke-width="1"/></svg>
-    </span>
-    <span>Family Home<span class="template-label">6×5m · 3 rooms</span></span>
-  </button>
-  <button class="template-btn" data-template="lshape">
-    <span class="template-preview" style="background:rgba(75,83,32,0.55);">
-      <svg viewBox="0 0 44 36"><path d="M2,2 L34,2 L34,12 L22,12 L22,34 L2,34 Z" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"/></svg>
-    </span>
-    <span>L-Shape<span class="template-label">6×6m · 2 rooms</span></span>
-  </button>
-  <button class="template-btn" data-template="villa">
-    <span class="template-preview" style="background:rgba(75,83,32,0.65);">
-      <svg viewBox="0 0 44 36"><rect x="2" y="2" width="40" height="32" rx="3" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"/><line x1="16" y1="2" x2="16" y2="18" stroke="rgba(255,255,255,0.25)" stroke-width="1"/><line x1="28" y1="2" x2="28" y2="18" stroke="rgba(255,255,255,0.25)" stroke-width="1"/><line x1="2" y1="18" x2="42" y2="18" stroke="rgba(255,255,255,0.25)" stroke-width="1"/></svg>
-    </span>
-    <span>Villa<span class="template-label">8×6m · 4 rooms</span></span>
-  </button>
-</div>
-
-<div class="info-panel" id="info">
-  <span>Right-click + drag</span> to orbit &bull; Pick a <span>template</span> or <span>Draw Wall</span> to start
-</div>
-
-<div class="toolbar">
-  <button class="tool-btn active" id="btnOrbit">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
-    Orbit
-  </button>
-  <button class="tool-btn" id="btnDrawWall">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="4" y1="20" x2="20" y2="4"/><polyline points="14,4 20,4 20,10"/></svg>
-    Draw Wall
-  </button>
-  <div class="tool-sep"></div>
-  <button class="tool-btn" id="btnRoof">Roof</button>
-  <button class="tool-btn" id="btnDelete">Delete</button>
-  <div class="tool-sep"></div>
-  <button class="tool-btn" id="btnUndo" disabled>Undo</button>
-  <button class="tool-btn" id="btnReset">Reset</button>
-  <button class="tool-btn export-btn" id="btnExport">Export 3D</button>
-</div>
-
-<div class="snap-indicator" id="snapDot"></div>
+<body class="h-full text-white">
 
 <canvas id="canvas3d"></canvas>
+<div class="snap-dot" id="snapDot"></div>
+
+<!-- Sidebar -->
+<div id="sidebar">
+  <div class="text-white/35 text-[11px] font-semibold uppercase tracking-wider px-1 pb-1">Templates</div>
+  <button class="side-btn template-btn" data-template="studio" style="border-color:rgba(184,200,118,0.2);">
+    <span class="side-icon" style="background:rgba(184,200,118,0.15);">▢</span>Studio<span class="text-white/25 text-[10px] ml-1">4×4m</span>
+  </button>
+  <button class="side-btn template-btn" data-template="cottage" style="border-color:rgba(184,200,118,0.2);">
+    <span class="side-icon" style="background:rgba(184,200,118,0.18);">⌂</span>Cottage<span class="text-white/25 text-[10px] ml-1">6×4m</span>
+  </button>
+  <button class="side-btn template-btn" data-template="family" style="border-color:rgba(184,200,118,0.2);">
+    <span class="side-icon" style="background:rgba(184,200,118,0.2);">🏠</span>Family Home<span class="text-white/25 text-[10px] ml-1">7×5m</span>
+  </button>
+  <button class="side-btn template-btn" data-template="lshape" style="border-color:rgba(184,200,118,0.2);">
+    <span class="side-icon" style="background:rgba(184,200,118,0.22);">⌐</span>L-Shape<span class="text-white/25 text-[10px] ml-1">6×6m</span>
+  </button>
+  <button class="side-btn template-btn" data-template="villa" style="border-color:rgba(184,200,118,0.2);">
+    <span class="side-icon" style="background:rgba(184,200,118,0.25);">⬡</span>Villa<span class="text-white/25 text-[10px] ml-1">8×6m</span>
+  </button>
+
+  <div class="side-sep"></div>
+  <div class="text-white/35 text-[11px] font-semibold uppercase tracking-wider px-1 pb-0">Build</div>
+  <button class="side-btn active" data-tool="drawWall" data-mode="build">
+    <span class="side-icon" style="background:rgba(75,83,32,0.35);">▦</span>Draw Wall
+  </button>
+  <button class="side-btn" data-tool="roof" data-mode="build">
+    <span class="side-icon" style="background:rgba(75,83,32,0.4);">⌂</span>Roof
+  </button>
+  <button class="side-btn" data-tool="window" data-mode="build">
+    <span class="side-icon" style="background:rgba(75,83,32,0.45);">⬜</span>Window
+  </button>
+  <button class="side-btn" data-tool="door" data-mode="build">
+    <span class="side-icon" style="background:rgba(75,83,32,0.5);">🚪</span>Door
+  </button>
+
+  <div class="side-sep"></div>
+  <div class="text-white/35 text-[11px] font-semibold uppercase tracking-wider px-1 pb-0">Living Room</div>
+  <button class="side-btn" data-tool="sofa" data-mode="furnish">
+    <span class="side-icon" style="background:rgba(75,83,32,0.3);">🛋</span>Sofa
+  </button>
+  <button class="side-btn" data-tool="coffeeTable" data-mode="furnish">
+    <span class="side-icon" style="background:rgba(75,83,32,0.35);">⊞</span>Coffee Table
+  </button>
+  <button class="side-btn" data-tool="rug" data-mode="furnish">
+    <span class="side-icon" style="background:rgba(75,83,32,0.4);">▬</span>Rug
+  </button>
+  <button class="side-btn" data-tool="lamp" data-mode="furnish">
+    <span class="side-icon" style="background:rgba(75,83,32,0.45);">💡</span>Floor Lamp
+  </button>
+  <button class="side-btn" data-tool="plant" data-mode="furnish">
+    <span class="side-icon" style="background:rgba(75,83,32,0.5);">🌿</span>Plant
+  </button>
+
+  <div class="side-sep"></div>
+  <div class="text-white/35 text-[11px] font-semibold uppercase tracking-wider px-1 pb-0">Dining / Bedroom</div>
+  <button class="side-btn" data-tool="table" data-mode="furnish">
+    <span class="side-icon" style="background:rgba(75,83,32,0.3);">◫</span>Dining Table
+  </button>
+  <button class="side-btn" data-tool="chair" data-mode="furnish">
+    <span class="side-icon" style="background:rgba(75,83,32,0.35);">🪑</span>Chair
+  </button>
+  <button class="side-btn" data-tool="bed" data-mode="furnish">
+    <span class="side-icon" style="background:rgba(75,83,32,0.4);">🛏</span>Bed
+  </button>
+  <button class="side-btn" data-tool="bookshelf" data-mode="furnish">
+    <span class="side-icon" style="background:rgba(75,83,32,0.45);">📚</span>Bookshelf
+  </button>
+
+  <div class="side-sep"></div>
+  <div class="text-white/35 text-[11px] font-semibold uppercase tracking-wider px-1 pb-0">Kitchen</div>
+  <button class="side-btn" data-tool="kitchen" data-mode="furnish">
+    <span class="side-icon" style="background:rgba(75,83,32,0.3);">🍳</span>Kitchen Island
+  </button>
+
+  <div class="side-sep"></div>
+  <button class="side-btn" data-tool="orbit" data-mode="" id="btnOrbit" style="border-color:rgba(255,255,255,0.15);">
+    <span class="side-icon" style="background:rgba(255,255,255,0.06);">⊕</span>Orbit
+  </button>
+  <button class="side-btn" id="btnTour" style="border-color:rgba(75,83,32,0.3);">
+    <span class="side-icon" style="background:rgba(75,83,32,0.35);">👁</span>Tour Interior
+  </button>
+</div>
+
+<!-- Toolbar -->
+<div id="toolbar" class="glass">
+  <button class="tbtn" id="btnUndo" disabled>↩ Undo</button>
+  <span id="wallCount" class="text-white/35 text-xs font-medium px-2">0 walls</span>
+  <div class="tsep"></div>
+  <button class="tbtn" id="btnClear">Clear All</button>
+  <button class="tbtn" id="btnExport">Export 3D</button>
+</div>
+
+<!-- Info -->
+<div id="infoBar" class="glass">
+  Click <span class="text-[#B8C876] font-bold">Draw Wall</span> to start &bull;
+  <span class="text-[#B8C876] font-bold">Shift</span>=snap 90° &bull;
+  <span class="text-[#B8C876] font-bold">Esc</span>=cancel
+</div>
 
 <script type="importmap">
 { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
@@ -248,866 +174,1159 @@
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 
-const canvas = document.getElementById('canvas3d');
-const info = document.getElementById('info');
-const snapDot = document.getElementById('snapDot');
-
-const scene = new THREE.Scene();
-scene.background = new THREE.Color('#1a1d12');
-scene.fog = new THREE.Fog('#1a1d12', 25, 90);
-
-const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.5, 200);
-camera.position.set(18, 16, 18);
-camera.lookAt(0, 0, 0);
-
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.target.set(0, 0, 0);
-controls.enableDamping = true;
-controls.dampingFactor = 0.08;
-controls.minDistance = 4;
-controls.maxDistance = 50;
-controls.maxPolarAngle = Math.PI / 2.1;
-controls.mouseButtons = { LEFT: null, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE };
-controls.update();
-
-// Lighting
-scene.add(new THREE.AmbientLight('#c8d6c0', 1.2));
-const sun = new THREE.DirectionalLight('#fff8e8', 4);
-sun.position.set(20, 30, 10);
-sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
-sun.shadow.camera.near = 0.5; sun.shadow.camera.far = 100;
-sun.shadow.camera.left = -35; sun.shadow.camera.right = 35;
-sun.shadow.camera.top = 35; sun.shadow.camera.bottom = -35;
-sun.shadow.bias = -0.0001;
-scene.add(sun);
-const fillLight = new THREE.DirectionalLight('#b8c8b0', 0.8);
-fillLight.position.set(-10, 5, -5);
-scene.add(fillLight);
-
-// Ground
-const ground = new THREE.Mesh(
-  new THREE.PlaneGeometry(40, 40),
-  new THREE.MeshStandardMaterial({ color: '#2a3020', roughness: 0.9 })
-);
-ground.rotation.x = -Math.PI / 2;
-ground.receiveShadow = true;
-scene.add(ground);
-scene.add(new THREE.GridHelper(40, 40, '#3a4428', '#2a3020').translateY(0.01));
-
-// Materials
-const WALL_H = 3, WALL_T = 0.4;
-const matWall = new THREE.MeshStandardMaterial({ color: '#8B9A30', roughness: 0.45, metalness: 0.05 });
-const matWallInner = new THREE.MeshStandardMaterial({ color: '#F5F0E8', roughness: 0.5, metalness: 0.02 });
-const matHover = new THREE.MeshStandardMaterial({ color: '#ff5c5c', roughness: 0.45, metalness: 0.05, emissive:'#ff2222', emissiveIntensity:0.3 });
-const matPreview = new THREE.MeshStandardMaterial({ color: '#B8C876', roughness: 0.3, metalness: 0.05, transparent:true, opacity:0.5 });
-const matCeiling = new THREE.MeshStandardMaterial({ color: '#6B7230', roughness: 0.6, metalness: 0.05 });
-const matFoundation = new THREE.MeshStandardMaterial({ color: '#555', roughness: 0.7, metalness: 0.05 });
-const matFloor = new THREE.MeshStandardMaterial({ color: '#c4a87c', roughness: 0.55, metalness: 0.02 });
-const matRoofDark = new THREE.MeshStandardMaterial({ color: '#4a3820', roughness: 0.5, metalness: 0.08 });
-const matWindowFrame = new THREE.MeshStandardMaterial({ color: '#3a3a3a', roughness: 0.3, metalness: 0.5 });
-const matGlass = new THREE.MeshStandardMaterial({ color: '#a8d8ea', roughness: 0.1, metalness: 0.2, transparent: true, opacity: 0.55 });
-const matWindowSill = new THREE.MeshStandardMaterial({ color: '#5a5a5a', roughness: 0.4, metalness: 0.3 });
-const matPillar = new THREE.MeshStandardMaterial({ color: '#7A8830', roughness: 0.4, metalness: 0.08 });
-const matDoorFrame = new THREE.MeshStandardMaterial({ color: '#2a2a2a', roughness: 0.25, metalness: 0.6 });
-const matDoorPanel = new THREE.MeshStandardMaterial({ color: '#4a3520', roughness: 0.5, metalness: 0.05 });
-const matDoorHandle = new THREE.MeshStandardMaterial({ color: '#c0a060', roughness: 0.2, metalness: 0.9 });
-const matCeilingTrim = new THREE.MeshStandardMaterial({ color: '#5a6028', roughness: 0.5, metalness: 0.05 });
-
-// State
-let mode = 'orbit';
-let walls = [];
-let windows = [];
-let pillars = [];
-let doors = [];
-let foundationMesh = null;
-let floorMesh = null;
-let ceilingMesh = null;
-let roofGroup = null;
-let roofType = 'flat'; // 'flat' | 'gable'
-let previewWall = null;
-let wallStart = null;
-let drawActive = false;
-let lastWallEnd = null;
-let undoStack = [];
-
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-const SNAP = 1;
-function snap(v) { return Math.round(v / SNAP) * SNAP; }
-
-// ── Undo ──
-const UndoAction = { ADD_WALL:'add_wall', REMOVE_WALL:'remove_wall', SET_ROOF:'set_roof', RESET:'reset' };
-
-function pushUndo(action, data) {
-  undoStack.push({ action, data, walls: walls.length, time: Date.now() });
-  if (undoStack.length > 50) undoStack.shift();
-  updateUndoBtn();
+// ═══════════════════════════════════
+//  GRID MATH
+// ═══════════════════════════════════
+class GridMath {
+  constructor(s=0.5){this._s=s;}
+  get size(){return this._s;}
+  set size(v){this._s=Math.max(0.1,Math.min(5,v));}
+  snap(v){return this._s*Math.round(v/this._s);}
+  snapPt(x,z){return{x:this.snap(x),z:this.snap(z)};}
+  snapV3(v){return new THREE.Vector3(this.snap(v.x),v.y,this.snap(v.z));}
+  snap90(fx,fz,tx,tz){
+    const dx=tx-fx,dz=tz-fz;
+    return Math.abs(dx)>Math.abs(dz)?{x:this.snap(tx),z:fz}:{x:fx,z:this.snap(tz)};
+  }
+  nearest(x,z,cands,r=1.2){let b=null,bd=r;for(const c of cands){const d=Math.hypot(c.x-x,c.z-z);if(d<bd){bd=d;b=c;}}return b;}
 }
 
-function updateUndoBtn() {
-  document.getElementById('btnUndo').disabled = undoStack.length === 0;
+// ═══════════════════════════════════
+//  SCENE SETUP
+// ═══════════════════════════════════
+const canvas=document.getElementById('canvas3d');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setSize(window.innerWidth,window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.1;
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color('#1a1d12');
+scene.fog=new THREE.Fog('#1a1d12',25,90);
+
+const camera=new THREE.PerspectiveCamera(50,window.innerWidth/window.innerHeight,0.5,200);
+camera.position.set(16,13,16);camera.lookAt(3,0,2);
+
+const orbit=new OrbitControls(camera,renderer.domElement);
+orbit.target.set(3,0,2);orbit.enableDamping=true;orbit.dampingFactor=0.08;
+orbit.minDistance=3;orbit.maxDistance=60;orbit.maxPolarAngle=Math.PI/2.1;
+orbit.mouseButtons={LEFT:THREE.MOUSE.ROTATE,MIDDLE:THREE.MOUSE.DOLLY,RIGHT:THREE.MOUSE.PAN};
+orbit.update();
+
+// ── First-Person Tour Mode ──
+const fpControls = new PointerLockControls(camera, renderer.domElement);
+fpControls.enabled = false;
+let tourActive = false;
+const tourSpeed = 6;
+const tourKeys = { w:false, a:false, s:false, d:false, shift:false };
+const EYE_HEIGHT = 1.6;
+const COLLISION_RADIUS = 0.4;
+
+function startTour() {
+  if (!walls.length) {
+    infoBar.innerHTML = 'Build walls <span class="text-[#B8C876] font-bold">first</span> to tour inside!';
+    return;
+  }
+  const b = bounds();
+  const cx = (b.mnX + b.mxX) / 2, cz = (b.mnZ + b.mxZ) / 2;
+  camera.position.set(cx, EYE_HEIGHT, cz);
+
+  tourActive = true;
+  fpControls.enabled = true;
+  fpControls.lock();
+  orbit.enabled = false;
+  canvas.classList.remove('placing');
+  document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('btnTour').classList.add('active');
+  infoBar.innerHTML = '<span class="text-[#B8C876] font-bold">WASD</span> move &bull; <span class="text-[#B8C876] font-bold">Mouse</span> look &bull; <span class="text-[#B8C876] font-bold">Esc</span> exit tour &bull; <span class="text-[#B8C876] font-bold">Shift</span> run';
 }
 
-function performUndo() {
-  if (undoStack.length === 0) return;
-  const entry = undoStack.pop();
-  updateUndoBtn();
-  
-  if (entry.action === UndoAction.ADD_WALL || entry.action === UndoAction.REMOVE_WALL) {
-    const last = walls[walls.length - 1];
-    if (last) {
-      scene.remove(last);
-      last.geometry?.dispose();
-      walls.pop();
+function stopTour() {
+  tourActive = false;
+  fpControls.enabled = false;
+  fpControls.unlock();
+  orbit.enabled = true;
+  camera.position.set(16, 13, 16);
+  orbit.target.set(cx(), 0, cz());
+  orbit.update();
+  canvas.classList.add('placing');
+  document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('btnOrbit').classList.add('active');
+  tool = 'orbit'; mode = '';
+  infoBar.innerHTML = 'Tour ended. <span class="text-[#B8C876] font-bold">Left+drag</span> orbit &bull; Walls: <span class="text-[#B8C876] font-bold">' + walls.length + '</span>';
+}
+
+function checkCollision(pos) {
+  const r = COLLISION_RADIUS;
+  for (const w of walls) {
+    const d = w.userData;
+    const wx = d.endX - d.startX, wz = d.endZ - d.startZ;
+    const wLen = Math.hypot(wx, wz);
+    if (wLen < 0.01) continue;
+    const ux = wx / wLen, uz = wz / wLen;
+    const t = ((pos.x - d.startX) * ux + (pos.z - d.startZ) * uz) / wLen;
+    const ct = Math.max(0, Math.min(1, t));
+    const cx = d.startX + wx * ct, cz = d.startZ + wz * ct;
+    const dist = Math.hypot(pos.x - cx, pos.z - cz);
+    const minDist = r + WALL_T / 2;
+    if (dist < minDist) {
+      const nx = (pos.x - cx) / (dist || 0.001);
+      const nz = (pos.z - cz) / (dist || 0.001);
+      pos.x = cx + nx * minDist;
+      pos.z = cz + nz * minDist;
     }
-    rebuildAll();
-    info.innerHTML = 'Undo — <span>wall removed</span> &bull; Walls: <span>' + walls.length + '</span>';
-  } else if (entry.action === UndoAction.RESET && entry.data) {
-    // Restore walls from saved data
-    resetAll(false);
-    entry.data.walls.forEach(w => {
-      const wall = createWall(w.sx, w.sz, w.ex, w.ez, matWall);
-      if (wall) { scene.add(wall); walls.push(wall); }
-    });
-    rebuildAll();
-    info.innerHTML = 'Undo reset — restored <span>' + walls.length + '</span> walls';
-  } else {
-    updateUndoBtn();
   }
 }
 
-// ── Foundations & Floor ──
-function addFoundation() {
-  removeFoundation();
-  if (walls.length === 0) return;
-  let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
-  walls.forEach(w => {
-    const d = w.userData;
-    minX = Math.min(minX, d.startX, d.endX);
-    maxX = Math.max(maxX, d.startX, d.endX);
-    minZ = Math.min(minZ, d.startZ, d.endZ);
-    maxZ = Math.max(maxZ, d.startZ, d.endZ);
-  });
-  const fw = maxX - minX + WALL_T + 0.2;
-  const fd = maxZ - minZ + WALL_T + 0.2;
-  if (fw < 1 || fd < 1) return;
-  const geo = new THREE.BoxGeometry(fw, 0.18, fd);
-  foundationMesh = new THREE.Mesh(geo, matFoundation);
-  foundationMesh.position.set((minX+maxX)/2, 0.09, (minZ+maxZ)/2);
-  foundationMesh.receiveShadow = true;
-  foundationMesh.userData = { isFoundation: true };
-  scene.add(foundationMesh);
+window.addEventListener('keydown', ev => {
+  if (!tourActive) return;
+  const k = ev.key.toLowerCase();
+  if (k in tourKeys) { tourKeys[k] = true; ev.preventDefault(); }
+});
+window.addEventListener('keyup', ev => {
+  if (!tourActive) return;
+  const k = ev.key.toLowerCase();
+  if (k in tourKeys) { tourKeys[k] = false; ev.preventDefault(); }
+  if (ev.key === 'Escape') stopTour();
+});
+
+fpControls.addEventListener('lock', () => { infoBar.innerHTML = '<span class="text-[#B8C876] font-bold">WASD</span> move &bull; <span class="text-[#B8C876] font-bold">Mouse</span> look &bull; <span class="text-[#B8C876] font-bold">Esc</span> exit &bull; <span class="text-[#B8C876] font-bold">Shift</span> run'; });
+fpControls.addEventListener('unlock', () => { if (tourActive) stopTour(); });
+
+function updateTour(dt) {
+  if (!tourActive || !fpControls.isLocked) return;
+  const speed = tourSpeed * (tourKeys.shift ? 1.7 : 1) * dt;
+  const forward = new THREE.Vector3();
+  camera.getWorldDirection(forward);
+  forward.y = 0; forward.normalize();
+  const right = new THREE.Vector3().crossVectors(forward, new THREE.Vector3(0,1,0)).normalize();
+
+  if (tourKeys.w) { camera.position.addScaledVector(forward, speed); }
+  if (tourKeys.s) { camera.position.addScaledVector(forward, -speed * 0.6); }
+  if (tourKeys.a) { camera.position.addScaledVector(right, -speed * 0.7); }
+  if (tourKeys.d) { camera.position.addScaledVector(right, speed * 0.7); }
+
+  camera.position.y = EYE_HEIGHT;
+  checkCollision(camera.position);
 }
 
-function removeFoundation() {
-  if (foundationMesh) { scene.remove(foundationMesh); foundationMesh.geometry?.dispose(); foundationMesh = null; }
-}
+// ── Lighting ──
+const ambient=new THREE.AmbientLight('#d8e0d0',1.3);scene.add(ambient);
+const sun=new THREE.DirectionalLight('#fff8e8',4.5);sun.position.set(20,30,10);
+sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
+sun.shadow.camera.near=0.5;sun.shadow.camera.far=100;
+sun.shadow.camera.left=-40;sun.shadow.camera.right=40;
+sun.shadow.camera.top=40;sun.shadow.camera.bottom=-40;sun.shadow.bias=-0.0002;
+scene.add(sun);
+const fill=new THREE.DirectionalLight('#b8c8b0',0.7);fill.position.set(-10,5,-5);scene.add(fill);
+// Warm interior bounce light
+const interiorFill=new THREE.DirectionalLight('#ffe8d0',1.0);interiorFill.position.set(0,2,0);scene.add(interiorFill);
 
-function addFloor() {
-  removeFloor();
-  if (walls.length === 0) return;
-  let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
-  walls.forEach(w => {
-    const d = w.userData;
-    minX = Math.min(minX, d.startX, d.endX);
-    maxX = Math.max(maxX, d.startX, d.endX);
-    minZ = Math.min(minZ, d.startZ, d.endZ);
-    maxZ = Math.max(maxZ, d.startZ, d.endZ);
-  });
-  const fw = maxX - minX, fd = maxZ - minZ;
-  if (fw < 0.5 || fd < 0.5) return;
-  const geo = new THREE.PlaneGeometry(fw, fd);
-  floorMesh = new THREE.Mesh(geo, matFloor);
-  floorMesh.rotation.x = -Math.PI / 2;
-  floorMesh.position.set((minX+maxX)/2, 0.19, (minZ+maxZ)/2);
-  floorMesh.receiveShadow = true;
-  floorMesh.userData = { isFloor: true };
-  scene.add(floorMesh);
-}
+const matGrass=new THREE.MeshStandardMaterial({color:'#4a5a30',roughness:0.85});
 
-function removeFloor() {
-  if (floorMesh) { scene.remove(floorMesh); floorMesh.geometry?.dispose(); floorMesh = null; }
-}
+// Ground
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(50,50),matGrass);
+ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
+const gh=new THREE.GridHelper(50,100,'#3a4428','#2a3020');gh.position.y=0.01;scene.add(gh);
 
-// ── Wall System ──
-function getAllEndpoints() {
-  const pts = [];
-  walls.forEach(w => {
-    const d = w.userData;
-    pts.push({ x: d.startX, z: d.startZ }, { x: d.endX, z: d.endZ });
-  });
-  return pts;
-}
+// ═══════════════════════════════════
+//  MATERIALS — Professional Interior
+// ═══════════════════════════════════
+const WALL_H=3,WALL_T=0.4,EAVE=0.35;
 
-function findSnapPoint(x, z) {
-  const eps = getAllEndpoints();
-  let best = null, bestDist = 1.2;
-  eps.forEach(p => {
-    const d = Math.sqrt((p.x-x)**2 + (p.z-z)**2);
-    if (d < bestDist) { bestDist = d; best = p; }
-  });
-  return best;
-}
+// Exterior
+const matWall=new THREE.MeshStandardMaterial({color:'#8B9A30',roughness:0.45,metalness:0.05});
+const matFoundation=new THREE.MeshStandardMaterial({color:'#555',roughness:0.7});
+const matRoofDark=new THREE.MeshStandardMaterial({color:'#5c3a24',roughness:0.45,metalness:0.05});
+const matRoofTile=new THREE.MeshStandardMaterial({color:'#7a4030',roughness:0.5,metalness:0.06});
+const matTrim=new THREE.MeshStandardMaterial({color:'#5a6028',roughness:0.5});
+const matEave=new THREE.MeshStandardMaterial({color:'#f5f0e5',roughness:0.55});
+const matPillar=new THREE.MeshStandardMaterial({color:'#7A8830',roughness:0.4,metalness:0.08});
+const matWallBase=new THREE.MeshStandardMaterial({color:'#3a3a3a',roughness:0.55,metalness:0.05});
+const matChimney=new THREE.MeshStandardMaterial({color:'#9b6a5a',roughness:0.6,metalness:0.02});
+const matPath=new THREE.MeshStandardMaterial({color:'#8a8a80',roughness:0.7});
 
-function createWall(sx, sz, ex, ez, mat = matWall) {
-  const dx = ex - sx, dz = ez - sz;
-  const len = Math.sqrt(dx*dx + dz*dz);
-  if (len < 0.3) return null;
-  const geo = new THREE.BoxGeometry(len, WALL_H, WALL_T);
-  const mesh = new THREE.Mesh(geo, mat);
-  mesh.position.set((sx+ex)/2, WALL_H/2, (sz+ez)/2);
-  mesh.rotation.y = Math.atan2(dx, dz);
-  mesh.castShadow = true; mesh.receiveShadow = true;
-  mesh.userData = { startX: sx, startZ: sz, endX: ex, endZ: ez, isWall: true };
+// Interior — premium palette
+const matWallInner=new THREE.MeshStandardMaterial({color:'#F7F3EC',roughness:0.55,metalness:0.01}); // warm cream
+const matFloor=new THREE.MeshStandardMaterial({color:'#C4A26C',roughness:0.4,metalness:0.02}); // rich oak
+const matCeiling=new THREE.MeshStandardMaterial({color:'#F5F1EA',roughness:0.6,metalness:0.01}); // white ceiling
+const matBaseboard=new THREE.MeshStandardMaterial({color:'#F0ECE5',roughness:0.45,metalness:0.02}); // white trim
+const matCeilingBeam=new THREE.MeshStandardMaterial({color:'#D4C8B0',roughness:0.5,metalness:0.03}); // exposed beam
+
+// Preview / ghost
+const matPreview=new THREE.MeshStandardMaterial({color:'#B8C876',roughness:0.3,metalness:0.05,transparent:true,opacity:0.45,depthWrite:false});
+const matGhost=new THREE.MeshStandardMaterial({color:'#B8C876',roughness:0.3,metalness:0.05,transparent:true,opacity:0.4,depthWrite:false});
+const matHover=new THREE.MeshStandardMaterial({color:'#ff5c5c',roughness:0.45,emissive:'#ff2222',emissiveIntensity:0.3});
+
+// ═══════════════════════════════════
+//  STATE
+// ═══════════════════════════════════
+const grid=new GridMath(0.5);
+let mode='build';
+let tool='drawWall';
+let walls=[],windows=[],pillars=[],doors=[],furniture=[];
+let foundationMesh=null,floorMesh=null,ceilingMesh=null,roofGroup=null;
+let interiorPanels=[],baseboards=[],gardenGroup=null;
+let roofType='flat';
+let previewObj=null,wallStart=null,drawActive=false,lastWallEnd=null;
+let undoStack=[];
+const endpoints=[];
+
+const raycaster=new THREE.Raycaster();
+const mouseV=new THREE.Vector2();
+const groundPlane=new THREE.Plane(new THREE.Vector3(0,1,0),0);
+const snapDot=document.getElementById('snapDot');
+const infoBar=document.getElementById('infoBar');
+
+// ═══════════════════════════════════
+//  WALL GEOMETRY
+// ═══════════════════════════════════
+function createWallGeom(sx,sz,ex,ez,h,mat){
+  const dx=ex-sx,dz=ez-sz,len=Math.hypot(dx,dz);
+  if(len<0.2)return null;
+  const shape=new THREE.Shape();
+  const hw=WALL_T/2;
+  shape.moveTo(-hw,0);shape.lineTo(hw,0);shape.lineTo(hw,h);shape.lineTo(-hw,h);shape.closePath();
+  const geo=new THREE.ExtrudeGeometry(shape,{steps:1,depth:len,bevelEnabled:false});
+  const mesh=new THREE.Mesh(geo,mat);
+  mesh.position.set(sx,0,sz);
+  mesh.rotation.y=Math.atan2(dx,dz);
+  mesh.castShadow=true;mesh.receiveShadow=true;
+  mesh.userData={isWall:true,startX:sx,startZ:sz,endX:ex,endZ:ez,length:len};
   return mesh;
 }
 
-function removePreview() {
-  if (previewWall) { scene.remove(previewWall); previewWall.geometry?.dispose(); previewWall = null; }
+function getGround(ev){
+  mouseV.x=(ev.clientX/window.innerWidth)*2-1;
+  mouseV.y=-(ev.clientY/window.innerHeight)*2+1;
+  raycaster.setFromCamera(mouseV,camera);
+  const t=new THREE.Vector3();
+  return raycaster.ray.intersectPlane(groundPlane,t)?t:null;
 }
 
-function getGround(event) {
-  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-  raycaster.setFromCamera(mouse, camera);
-  const pt = new THREE.Vector3();
-  if (raycaster.ray.intersectPlane(groundPlane, pt)) return { x: snap(pt.x), z: snap(pt.z) };
-  return null;
+function toScreen(wx,wz){
+  const v=new THREE.Vector3(wx,0,wz).project(camera);
+  return{x:(v.x*0.5+0.5)*window.innerWidth,y:(-v.y*0.5+0.5)*window.innerHeight};
 }
 
-function getRawGround(event) {
-  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-  raycaster.setFromCamera(mouse, camera);
-  const pt = new THREE.Vector3();
-  if (raycaster.ray.intersectPlane(groundPlane, pt)) return { x: pt.x, z: pt.z };
-  return null;
+// ═══════════════════════════════════
+//  FOUNDATION / FLOOR / ROOF
+// ═══════════════════════════════════
+function bounds(){
+  let mnX=Infinity,mxX=-Infinity,mnZ=Infinity,mxZ=-Infinity;
+  walls.forEach(w=>{const d=w.userData;mnX=Math.min(mnX,d.startX,d.endX);mxX=Math.max(mxX,d.startX,d.endX);mnZ=Math.min(mnZ,d.startZ,d.endZ);mxZ=Math.max(mxZ,d.startZ,d.endZ);});
+  return{mnX,mxX,mnZ,mxZ};
 }
+function cx(){const b=bounds();return(b.mnX+b.mxX)/2;}
+function cz(){const b=bounds();return(b.mnZ+b.mxZ)/2;}
 
-function projectTo3D(px, pz) {
-  const vec = new THREE.Vector3(px, 0, pz);
-  vec.project(camera);
-  return {
-    x: (vec.x * 0.5 + 0.5) * window.innerWidth,
-    y: (-vec.y * 0.5 + 0.5) * window.innerHeight
-  };
-}
-
-function snapTo90(fromX, fromZ, toX, toZ) {
-  const dx = toX - fromX;
-  const dz = toZ - fromZ;
-  if (Math.abs(dx) > Math.abs(dz)) {
-    return { x: snap(toX), z: fromZ };
-  } else {
-    return { x: fromX, z: snap(toZ) };
-  }
-}
-
-// ── Ceiling / Roof ──
-const EAVE = 0.35;
-
-function addCeiling() {
-  removeCeiling();
-  if (walls.length === 0) return;
-  let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
-  walls.forEach(w => {
-    const d = w.userData;
-    minX = Math.min(minX, d.startX, d.endX);
-    maxX = Math.max(maxX, d.startX, d.endX);
-    minZ = Math.min(minZ, d.startZ, d.endZ);
-    maxZ = Math.max(maxZ, d.startZ, d.endZ);
-  });
-  const cw = maxX - minX + WALL_T + EAVE * 2;
-  const cd = maxZ - minZ + WALL_T + EAVE * 2;
-  if (cw < 1 || cd < 1) return;
-
-  const group = new THREE.Group();
-  const slabGeo = new THREE.BoxGeometry(cw, 0.15, cd);
-  const slab = new THREE.Mesh(slabGeo, matCeiling);
-  slab.position.y = WALL_H;
-  slab.castShadow = true; slab.receiveShadow = true;
-  group.add(slab);
-
-  const trimH = 0.1, trimW = 0.12;
-  ['front','back'].forEach((dir, i) => {
-    const sign = i === 0 ? 1 : -1;
-    const trim = new THREE.Mesh(new THREE.BoxGeometry(cw + trimW, trimH, trimW), matCeilingTrim);
-    trim.position.set(0, WALL_H + 0.15 + trimH/2, sign * (cd/2 + trimW/2));
-    group.add(trim);
-  });
-  ['left','right'].forEach((dir, i) => {
-    const sign = i === 0 ? -1 : 1;
-    const trim = new THREE.Mesh(new THREE.BoxGeometry(trimW, trimH, cd), matCeilingTrim);
-    trim.position.set(sign * (cw/2 + trimW/2), WALL_H + 0.15 + trimH/2, 0);
-    group.add(trim);
-  });
-
-  group.position.set((minX+maxX)/2, 0, (minZ+maxZ)/2);
-  group.userData = { isCeiling: true };
-  scene.add(group);
-  ceilingMesh = group;
-}
-
-function removeCeiling() {
-  if (ceilingMesh) { scene.remove(ceilingMesh); ceilingMesh = null; }
-}
-
-function addGableRoof() {
-  removeRoof();
-  if (walls.length === 0) return;
-  let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
-  walls.forEach(w => {
-    const d = w.userData;
-    minX = Math.min(minX, d.startX, d.endX);
-    maxX = Math.max(maxX, d.startX, d.endX);
-    minZ = Math.min(minZ, d.startZ, d.endZ);
-    maxZ = Math.max(maxZ, d.startZ, d.endZ);
-  });
-  const rw = maxX - minX + WALL_T + EAVE * 2;
-  const rd = maxZ - minZ + WALL_T + EAVE * 2;
-  if (rw < 1 || rd < 1) return;
-
-  const group = new THREE.Group();
-  const ridgeH = 1.6; // peak height above walls
-  const cx = (minX+maxX)/2, cz = (minZ+maxZ)/2;
-
-  // Two sloped roof planes
-  const roofShape = new THREE.Shape();
-  roofShape.moveTo(-rw/2, 0);
-  roofShape.lineTo(rw/2, 0);
-  roofShape.lineTo(0, ridgeH);
-  roofShape.closePath();
-
-  const extrudeSettings = { steps: 1, depth: rd, bevelEnabled: false };
-  const roofGeo = new THREE.ExtrudeGeometry(roofShape, extrudeSettings);
-  const roof = new THREE.Mesh(roofGeo, matRoofDark);
-  roof.position.set(0, WALL_H, -rd/2);
-  roof.rotation.x = 0;
-  roof.castShadow = true; roof.receiveShadow = true;
-  group.add(roof);
-
-  // Ridge cap
-  const ridgeGeo = new THREE.BoxGeometry(0.2, 0.12, rd + 0.1);
-  const ridge = new THREE.Mesh(ridgeGeo, matCeilingTrim);
-  ridge.position.set(0, WALL_H + ridgeH, 0);
-  group.add(ridge);
-
-  // Eave trim on the two long sides (front/back of gable)
-  const eaveGeo = new THREE.BoxGeometry(rw + 0.2, 0.1, 0.12);
-  const frontEave = new THREE.Mesh(eaveGeo, matCeilingTrim);
-  frontEave.position.set(0, WALL_H, rd/2 + 0.06);
-  group.add(frontEave);
-  const backEave = new THREE.Mesh(eaveGeo, matCeilingTrim);
-  backEave.position.set(0, WALL_H, -rd/2 - 0.06);
-  group.add(backEave);
-
-  group.position.set(cx, 0, cz);
-  group.userData = { isRoof: true };
-  scene.add(group);
-  roofGroup = group;
-}
-
-function removeRoof() {
-  if (roofGroup) { scene.remove(roofGroup); roofGroup = null; }
-}
-
-function applyRoof() {
-  removeCeiling();
-  removeRoof();
-  if (roofType === 'flat') {
-    addCeiling();
-  } else {
-    addGableRoof();
-  }
-}
-
-// ── Windows ──
-function createWindow(midX, midZ, angle, wallLen) {
-  const group = new THREE.Group();
-  const WW = Math.min(1.2, wallLen * 0.42);
-  const WH = 1.2;
-  const WD = 0.08;
-  const posY = 1.6;
-  const FT = 0.06;
-
-  const glassGeo = new THREE.BoxGeometry(WW - FT*2, WH - FT*2, WD * 0.3);
-  const glass = new THREE.Mesh(glassGeo, matGlass);
-  glass.position.y = posY;
-  group.add(glass);
-
-  const fW = FT, fD = WD;
-  const topBar = new THREE.Mesh(new THREE.BoxGeometry(WW, fW, fD), matWindowFrame);
-  topBar.position.set(0, posY + WH/2 - fW/2, 0);
-  group.add(topBar);
-  const sill = new THREE.Mesh(new THREE.BoxGeometry(WW + 0.1, fW * 1.5, fD + 0.04), matWindowSill);
-  sill.position.set(0, posY - WH/2 + fW*0.75, 0.03);
-  group.add(sill);
-  const leftBar = new THREE.Mesh(new THREE.BoxGeometry(fW, WH, fD), matWindowFrame);
-  leftBar.position.set(-WW/2 + fW/2, posY, 0);
-  group.add(leftBar);
-  const rightBar = new THREE.Mesh(new THREE.BoxGeometry(fW, WH, fD), matWindowFrame);
-  rightBar.position.set(WW/2 - fW/2, posY, 0);
-  group.add(rightBar);
-  const mullion = new THREE.Mesh(new THREE.BoxGeometry(fW * 0.7, WH - FT*2, WD * 0.3), matWindowFrame);
-  mullion.position.set(0, posY, 0);
-  group.add(mullion);
-  const transom = new THREE.Mesh(new THREE.BoxGeometry(WW - FT*2, fW * 0.7, WD * 0.3), matWindowFrame);
-  transom.position.set(0, posY, 0);
-  group.add(transom);
-
-  group.position.set(midX, 0, midZ);
-  group.rotation.y = angle;
-  group.userData = { isWindow: true };
-  return group;
-}
-
-function removeWindows() {
-  windows.forEach(w => { scene.remove(w); });
-  windows = [];
-}
-
-function addWindows() {
-  removeWindows();
-  if (walls.length === 0) return;
-  const candidates = [];
-  walls.forEach(w => {
-    const d = w.userData;
-    const dx = d.endX - d.startX, dz = d.endZ - d.startZ;
-    const len = Math.sqrt(dx*dx + dz*dz);
-    if (len < 2.0) return;
-    const angle = Math.atan2(dx, dz);
-    const numWindows = len >= 5 ? 2 : 1;
-    for (let i = 0; i < numWindows; i++) {
-      const t = (i + 1) / (numWindows + 1);
-      const px = d.startX + dx * t;
-      const pz = d.startZ + dz * t;
-      const nx = Math.sin(angle) * (WALL_T/2 + 0.02);
-      const nz = Math.cos(angle) * (WALL_T/2 + 0.02);
-      candidates.push({ x: px + nx, z: pz + nz, angle: angle, len: len });
-    }
-  });
-  const placed = [];
-  candidates.forEach(c => {
-    const tooClose = placed.some(p => Math.sqrt((p.x-c.x)**2 + (p.z-c.z)**2) < 0.8);
-    if (!tooClose) placed.push(c);
-  });
-  const final = placed.slice(0, 3);
-  final.forEach(c => {
-    const win = createWindow(c.x, c.z, c.angle, c.len);
-    scene.add(win);
-    windows.push(win);
-  });
-}
-
-// ── Corner Pillars ──
-function addCornerPillars() {
-  removePillars();
-  if (walls.length === 0) return;
-  const pts = new Map();
-  walls.forEach(w => {
-    const d = w.userData;
-    pts.set(d.startX + ',' + d.startZ, { x: d.startX, z: d.startZ });
-    pts.set(d.endX + ',' + d.endZ, { x: d.endX, z: d.endZ });
-  });
-  const PS = WALL_T + 0.06;
-  pts.forEach(p => {
-    const geo = new THREE.BoxGeometry(PS, WALL_H, PS);
-    const pillar = new THREE.Mesh(geo, matPillar);
-    pillar.position.set(p.x, WALL_H / 2, p.z);
-    pillar.castShadow = true; pillar.receiveShadow = true;
-    pillar.userData = { isPillar: true };
-    scene.add(pillar);
-    pillars.push(pillar);
-  });
-}
-
-function removePillars() {
-  pillars.forEach(p => { scene.remove(p); p.geometry?.dispose(); });
-  pillars = [];
-}
-
-// ── Door ──
-function createDoor(midX, midZ, angle) {
-  const group = new THREE.Group();
-  const DW = 1.0, DH = 2.2, DD = 0.1, FT = 0.07;
-  const fD = DD + 0.04;
-
-  const topF = new THREE.Mesh(new THREE.BoxGeometry(DW + FT, FT, fD), matDoorFrame);
-  topF.position.set(0, DH, 0); group.add(topF);
-  const leftF = new THREE.Mesh(new THREE.BoxGeometry(FT, DH + FT, fD), matDoorFrame);
-  leftF.position.set(-DW/2, DH/2, 0); group.add(leftF);
-  const rightF = new THREE.Mesh(new THREE.BoxGeometry(FT, DH + FT, fD), matDoorFrame);
-  rightF.position.set(DW/2, DH/2, 0); group.add(rightF);
-
-  const panelGeo = new THREE.BoxGeometry(DW - FT * 0.5, DH - FT, DD);
-  const panel = new THREE.Mesh(panelGeo, matDoorPanel);
-  panel.position.set(0, DH/2, -0.01); group.add(panel);
-
-  const handleGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.15, 8);
-  const handle = new THREE.Mesh(handleGeo, matDoorHandle);
-  handle.position.set(DW/2 - 0.1, DH/2, DD/2 + 0.02);
-  handle.rotation.x = Math.PI / 2; group.add(handle);
-
-  const transomGeo = new THREE.BoxGeometry(DW - FT * 0.5, 0.3, DD * 0.5);
-  const transom = new THREE.Mesh(transomGeo, matGlass);
-  transom.position.set(0, DH + 0.22, 0); group.add(transom);
-
-  group.position.set(midX, 0, midZ);
-  group.rotation.y = angle;
-  group.userData = { isDoor: true };
-  return group;
-}
-
-function removeDoors() {
-  doors.forEach(d => { scene.remove(d); });
-  doors = [];
-}
-
-function addDoor() {
-  removeDoors();
-  if (walls.length === 0) return;
-  let best = null, bestLen = 0;
-  walls.forEach(w => {
-    const d = w.userData;
-    const dx = d.endX - d.startX, dz = d.endZ - d.startZ;
-    const len = Math.sqrt(dx*dx + dz*dz);
-    if (len > bestLen) { bestLen = len; best = w; }
-  });
-  if (!best || bestLen < 2) return;
-  const d = best.userData;
+// ── Compute interior-facing normal for a wall ──
+function interiorNormal(d, centerX, centerZ) {
   const dx = d.endX - d.startX, dz = d.endZ - d.startZ;
-  const angle = Math.atan2(dx, dz);
-  const t = 1/3;
-  const px = d.startX + dx * t, pz = d.startZ + dz * t;
-  const nx = Math.sin(angle) * (WALL_T/2 + 0.02);
-  const nz = Math.cos(angle) * (WALL_T/2 + 0.02);
-  const door = createDoor(px + nx, pz + nz, angle);
-  scene.add(door);
-  doors.push(door);
+  const len = Math.hypot(dx, dz);
+  if (len < 0.01) return { nx: 0, nz: 0 };
+  // Perpendicular: (-dz/len, dx/len)
+  const perpX = -dz / len, perpZ = dx / len;
+  const midX = (d.startX + d.endX) / 2, midZ = (d.startZ + d.endZ) / 2;
+  const toCenterX = centerX - midX, toCenterZ = centerZ - midZ;
+  const dot = perpX * toCenterX + perpZ * toCenterZ;
+  const sign = dot > 0 ? 1 : -1;
+  return { nx: perpX * sign, nz: perpZ * sign };
 }
 
-// ── Rebuild All (after wall changes) ──
-function rebuildAll() {
-  removeFoundation(); removeFloor(); removeCeiling(); removeRoof();
-  removeWindows(); removeDoors(); removePillars();
-  addFoundation(); addFloor();
-  applyRoof();
-  addWindows(); addDoor(); addCornerPillars();
+function addFoundation(){
+  if(foundationMesh){scene.remove(foundationMesh);foundationMesh.geometry?.dispose();foundationMesh=null;}
+  if(!walls.length)return;
+  const b=bounds();const fw=b.mxX-b.mnX+WALL_T+0.2,fd=b.mxZ-b.mnZ+WALL_T+0.2;
+  if(fw<1||fd<1)return;
+  foundationMesh=new THREE.Mesh(new THREE.BoxGeometry(fw,0.18,fd),matFoundation);
+  foundationMesh.position.set(cx(),0.09,cz());foundationMesh.receiveShadow=true;
+  foundationMesh.userData={isFoundation:true};scene.add(foundationMesh);
 }
 
-// ── Templates ──
-const templates = {
-  studio: {
-    exterior: [[0,0,4,0],[4,0,4,4],[4,4,0,4],[0,4,0,0]],
-    interior: [],
-    label: '4×4m · Open plan'
-  },
-  modern: {
-    exterior: [[0,0,6,0],[6,0,6,4],[6,4,0,4],[0,4,0,0]],
-    interior: [[3,0,3,4]],
-    label: '6×4m · 2 rooms'
-  },
-  family: {
-    exterior: [[0,0,6,0],[6,0,6,5],[6,5,0,5],[0,5,0,0]],
-    interior: [[3,0,3,5],[0,2.5,3,2.5]],
-    label: '6×5m · 3 rooms'
-  },
-  lshape: {
-    exterior: [[0,0,6,0],[6,0,6,2],[6,2,3,2],[3,2,3,6],[3,6,0,6],[0,6,0,0]],
-    interior: [[3,2,3,6]],
-    label: '6×6m · 2 rooms'
-  },
-  villa: {
-    exterior: [[0,0,8,0],[8,0,8,6],[8,6,0,6],[0,6,0,0]],
-    interior: [[2,0,2,6],[5,0,5,6],[0,3,8,3]],
-    label: '8×6m · 4 rooms'
+function addFloor(){
+  if(floorMesh){scene.remove(floorMesh);floorMesh.geometry?.dispose();floorMesh=null;}
+  if(!walls.length)return;
+  const b=bounds();const fw=b.mxX-b.mnX,fd=b.mxZ-b.mnZ;
+  if(fw<0.5||fd<0.5)return;
+  // Rich hardwood floor with subtle plank lines
+  const floorGroup = new THREE.Group();
+  const mainFloor = new THREE.Mesh(new THREE.PlaneGeometry(fw, fd), matFloor);
+  mainFloor.rotation.x = -Math.PI/2;
+  mainFloor.receiveShadow = true;
+  floorGroup.add(mainFloor);
+
+  // Subtle plank grooves (very thin lines)
+  const plankMat = new THREE.MeshBasicMaterial({color:'#b8956e',transparent:true,opacity:0.15});
+  const plankSpacing = 0.15;
+  const numPlanks = Math.floor(fd / plankSpacing);
+  for (let i = 0; i < numPlanks; i++) {
+    const z = -fd/2 + (i + 0.5) * plankSpacing;
+    const groove = new THREE.Mesh(new THREE.PlaneGeometry(fw - 0.04, 0.012), plankMat);
+    groove.rotation.x = -Math.PI/2;
+    groove.position.set(0, 0.003, z);
+    groove.receiveShadow = true;
+    floorGroup.add(groove);
   }
+
+  floorGroup.position.set(cx(), 0.19, cz());
+  floorGroup.userData = { isFloor: true };
+  scene.add(floorGroup);
+  floorMesh = floorGroup;
+}
+
+function addFlatCeiling(){
+  if(ceilingMesh){scene.remove(ceilingMesh);ceilingMesh=null;}
+  if(!walls.length)return;
+  const b=bounds();const cw=b.mxX-b.mnX+WALL_T+EAVE*2,cd=b.mxZ-b.mnZ+WALL_T+EAVE*2;
+  if(cw<1||cd<1)return;
+  const g=new THREE.Group();
+
+  // Main ceiling slab — white
+  const slab=new THREE.Mesh(new THREE.BoxGeometry(cw,0.12,cd),matCeiling);
+  slab.position.y=WALL_H;slab.receiveShadow=true;g.add(slab);
+
+  // Subtle exposed beams (decorative)
+  const beamH = 0.08, beamW = 0.1;
+  const beamSpan = 1.2;
+  const numBeams = Math.max(2, Math.floor(cw / beamSpan));
+  for (let i = 0; i < numBeams; i++) {
+    const x = -cw/2 + (i + 0.5) * (cw / numBeams);
+    const beam = new THREE.Mesh(new THREE.BoxGeometry(beamW, beamH, cd + 0.04), matCeilingBeam);
+    beam.position.set(x, WALL_H + 0.06 + beamH/2, 0);
+    beam.castShadow = true; beam.receiveShadow = true;
+    g.add(beam);
+  }
+
+  // Eave trim
+  const th=0.1,tw=0.12;
+  const ft=new THREE.Mesh(new THREE.BoxGeometry(cw+tw,th,tw),matTrim);ft.position.set(0,WALL_H+0.15+th/2,cd/2+tw/2);g.add(ft);
+  const bt=new THREE.Mesh(new THREE.BoxGeometry(cw+tw,th,tw),matTrim);bt.position.set(0,WALL_H+0.15+th/2,-cd/2-tw/2);g.add(bt);
+  const lt=new THREE.Mesh(new THREE.BoxGeometry(tw,th,cd),matTrim);lt.position.set(-cw/2-tw/2,WALL_H+0.15+th/2,0);g.add(lt);
+  const rt=new THREE.Mesh(new THREE.BoxGeometry(tw,th,cd),matTrim);rt.position.set(cw/2+tw/2,WALL_H+0.15+th/2,0);g.add(rt);
+
+  g.position.set(cx(),0,cz());g.userData={isCeiling:true};scene.add(g);ceilingMesh=g;
+}
+
+function addGableRoof(){
+  if(roofGroup){scene.remove(roofGroup);roofGroup=null;}
+  if(!walls.length)return;
+  const b=bounds();const rw=b.mxX-b.mnX+WALL_T+EAVE*2,rd=b.mxZ-b.mnZ+WALL_T+EAVE*2;
+  if(rw<1||rd<1)return;
+  const g=new THREE.Group();
+  const ridgeH=1.5;
+
+  const shape=new THREE.Shape();shape.moveTo(-rw/2,0);shape.lineTo(rw/2,0);shape.lineTo(0,ridgeH);shape.closePath();
+  const roofGeo=new THREE.ExtrudeGeometry(shape,{steps:1,depth:rd,bevelEnabled:false});
+  const roof=new THREE.Mesh(roofGeo,matRoofTile);
+  roof.position.set(0,WALL_H,-rd/2);roof.castShadow=roof.receiveShadow=true;g.add(roof);
+
+  // Ceiling under the gable (visible from inside) — white
+  const underCeil = new THREE.Mesh(new THREE.PlaneGeometry(rw - WALL_T, rd - WALL_T), matCeiling);
+  underCeil.rotation.x = -Math.PI/2;
+  underCeil.position.y = WALL_H - 0.01;
+  underCeil.receiveShadow = true;
+  g.add(underCeil);
+
+  const ridge=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.08,rd+0.1),matTrim);
+  ridge.position.set(0,WALL_H+ridgeH,0);g.add(ridge);
+
+  const etH=0.07,etW=0.13;
+  const fe=new THREE.Mesh(new THREE.BoxGeometry(rw+etW*2,etH,etW),matEave);fe.position.set(0,WALL_H,rd/2+etW/2);g.add(fe);
+  const be=new THREE.Mesh(new THREE.BoxGeometry(rw+etW*2,etH,etW),matEave);be.position.set(0,WALL_H,-rd/2-etW/2);g.add(be);
+  const le=new THREE.Mesh(new THREE.BoxGeometry(etW,etH,rd),matEave);le.position.set(-rw/2-etW/2,WALL_H,0);g.add(le);
+  const re=new THREE.Mesh(new THREE.BoxGeometry(etW,etH,rd),matEave);re.position.set(rw/2+etW/2,WALL_H,0);g.add(re);
+
+  const chW=0.28,chD=0.28,chH=1.0;
+  const chimney=new THREE.Mesh(new THREE.BoxGeometry(chW,chH,chD),matChimney);
+  chimney.position.set(rw*0.22,WALL_H+ridgeH*0.35+chH/2,rd*0.18);
+  chimney.castShadow=true;g.add(chimney);
+  const chCap=new THREE.Mesh(new THREE.BoxGeometry(chW+0.06,0.06,chD+0.06),matTrim);
+  chCap.position.copy(chimney.position);chCap.position.y+=chH/2+0.03;g.add(chCap);
+
+  g.position.set(cx(),0,cz());
+  g.userData={isRoof:true};
+  scene.add(g);roofGroup=g;
+}
+
+function applyRoof(){if(roofType==='flat'){if(roofGroup){scene.remove(roofGroup);roofGroup=null;}addFlatCeiling();}else{if(ceilingMesh){scene.remove(ceilingMesh);ceilingMesh=null;}addGableRoof();}}
+
+// ═══════════════════════════════════
+//  PILLARS
+// ═══════════════════════════════════
+function addPillars(){
+  pillars.forEach(p=>{scene.remove(p);p.geometry?.dispose();});pillars=[];
+  if(!walls.length)return;
+  const pts=new Map();
+  walls.forEach(w=>{const d=w.userData;pts.set(d.startX+','+d.startZ,{x:d.startX,z:d.startZ});pts.set(d.endX+','+d.endZ,{x:d.endX,z:d.endZ});});
+  const PS=WALL_T+0.06;
+  pts.forEach(p=>{const geo=new THREE.BoxGeometry(PS,WALL_H,PS);const mesh=new THREE.Mesh(geo,matPillar);mesh.position.set(p.x,WALL_H/2,p.z);mesh.castShadow=mesh.receiveShadow=true;mesh.userData={isPillar:true};scene.add(mesh);pillars.push(mesh);});
+}
+
+// ═══════════════════════════════════
+//  INTERIOR PANELS + BASEBOARDS
+// ═══════════════════════════════════
+function addInteriorDetails(){
+  // Clean previous
+  interiorPanels.forEach(p=>{scene.remove(p);if(p.geometry)p.geometry.dispose();});
+  interiorPanels=[];
+  baseboards.forEach(b=>{scene.remove(b);if(b.geometry)b.geometry.dispose();});
+  baseboards=[];
+
+  if(!walls.length)return;
+  const b=bounds();
+  const centerX=(b.mnX+b.mxX)/2, centerZ=(b.mnZ+b.mxZ)/2;
+
+  walls.forEach(w=>{
+    const d=w.userData;
+    const {nx, nz} = interiorNormal(d, centerX, centerZ);
+    if (Math.abs(nx) < 0.001 && Math.abs(nz) < 0.001) return;
+
+    const midX = (d.startX + d.endX) / 2, midZ = (d.startZ + d.endZ) / 2;
+    const dx = d.endX - d.startX, dz = d.endZ - d.startZ;
+    const len = Math.hypot(dx, dz);
+    const angle = Math.atan2(dx, dz);
+
+    // ── Interior wall panel (thin cream face) ──
+    const panelGeo = new THREE.PlaneGeometry(len - 0.04, WALL_H - 0.02);
+    const panel = new THREE.Mesh(panelGeo, matWallInner);
+    panel.position.set(midX + nx * (WALL_T/2 - 0.01), WALL_H/2, midZ + nz * (WALL_T/2 - 0.01));
+    panel.rotation.y = angle;
+    panel.receiveShadow = true;
+    panel.userData = { isInteriorPanel: true };
+    scene.add(panel);
+    interiorPanels.push(panel);
+
+    // ── Baseboard (white skirting) ──
+    const bbH = 0.12, bbD = 0.03;
+    const bbGeo = new THREE.BoxGeometry(len, bbH, bbD);
+    const bb = new THREE.Mesh(bbGeo, matBaseboard);
+    bb.position.set(midX + nx * (WALL_T/2 + bbD/2), bbH/2, midZ + nz * (WALL_T/2 + bbD/2));
+    bb.rotation.y = angle;
+    bb.receiveShadow = true; bb.castShadow = true;
+    bb.userData = { isBaseboard: true };
+    scene.add(bb);
+    baseboards.push(bb);
+  });
+}
+
+// ═══════════════════════════════════
+//  REBUILD ALL
+// ═══════════════════════════════════
+function rebuildAll(){
+  if(foundationMesh){scene.remove(foundationMesh);foundationMesh.geometry?.dispose();foundationMesh=null;}
+  if(floorMesh){scene.remove(floorMesh);/* group — dispose children */floorMesh=null;}
+  if(ceilingMesh){scene.remove(ceilingMesh);ceilingMesh=null;}
+  if(roofGroup){scene.remove(roofGroup);roofGroup=null;}
+  pillars.forEach(p=>{scene.remove(p);p.geometry?.dispose();});pillars=[];
+  interiorPanels.forEach(p=>{scene.remove(p);if(p.geometry)p.geometry.dispose();});interiorPanels=[];
+  baseboards.forEach(b=>{scene.remove(b);if(b.geometry)b.geometry.dispose();});baseboards=[];
+
+  const toRemove=[];
+  scene.children.forEach(c=>{if(c.userData&&(c.userData.isBase||c.userData.isPath||c.userData.isShutter))toRemove.push(c);});
+  toRemove.forEach(c=>scene.remove(c));
+
+  addFoundation();addFloor();applyRoof();addPillars();
+  addInteriorDetails(); // ★ Interior panels + baseboards
+
+  // Wall base trim — dark band at bottom of each exterior wall
+  walls.forEach(w=>{
+    const d=w.userData;const dx=d.endX-d.startX,dz=d.endZ-d.startZ,len=Math.hypot(dx,dz);
+    const geo=new THREE.BoxGeometry(len+0.02,0.25,WALL_T+0.04);
+    const trim=new THREE.Mesh(geo,matWallBase);
+    trim.position.set((d.startX+d.endX)/2,0.125,(d.startZ+d.endZ)/2);
+    trim.rotation.y=Math.atan2(dx,dz);
+    trim.receiveShadow=true;trim.userData={isBase:true};scene.add(trim);
+  });
+
+  // Pathway
+  if(doors.length){
+    const dd=doors[0].position;const fwd=new THREE.Vector3(0,0,-1);
+    fwd.applyQuaternion(doors[0].quaternion);
+    const plen=2.5;const pw=1.0;
+    const pathGeo=new THREE.PlaneGeometry(pw,plen);
+    const path=new THREE.Mesh(pathGeo,matPath);
+    path.rotation.x=-Math.PI/2;
+    path.position.set(dd.x+fwd.x*plen/2,0.005,dd.z+fwd.z*plen/2);
+    path.receiveShadow=true;path.userData={isPath:true};scene.add(path);
+  }
+
+  addGarden();
+
+  endpoints.length=0;
+  walls.forEach(w=>{const d=w.userData;endpoints.push({x:d.startX,z:d.startZ},{x:d.endX,z:d.endZ});});
+  updateCounts();
+}
+
+function clearPreview(){
+  if(previewObj){scene.remove(previewObj);previewObj=null;}
+}
+
+// ═══════════════════════════════════
+//  GARDEN
+// ═══════════════════════════════════
+const matWater=new THREE.MeshStandardMaterial({color:'#4a90d9',roughness:0.15,metalness:0.3,transparent:true,opacity:0.75});
+const matPoolEdge=new THREE.MeshStandardMaterial({color:'#d4cfc4',roughness:0.4});
+const matHedge=new THREE.MeshStandardMaterial({color:'#3d5a1e',roughness:0.7});
+const matTreeTrunk=new THREE.MeshStandardMaterial({color:'#6b4a30',roughness:0.7});
+const matTreeLeaves=new THREE.MeshStandardMaterial({color:'#3a6b25',roughness:0.75});
+const matDeck=new THREE.MeshStandardMaterial({color:'#b8956e',roughness:0.55});
+const matFence=new THREE.MeshStandardMaterial({color:'#e8e0d5',roughness:0.5});
+
+function addTree(x,z,s=1){
+  const g=new THREE.Group();
+  const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.08*s,0.12*s,1.8*s,8),matTreeTrunk);
+  trunk.position.y=0.9*s;trunk.castShadow=true;g.add(trunk);
+  const leaves1=new THREE.Mesh(new THREE.ConeGeometry(0.7*s,1.3*s,8),matTreeLeaves);
+  leaves1.position.y=2.0*s;leaves1.castShadow=true;g.add(leaves1);
+  const leaves2=new THREE.Mesh(new THREE.ConeGeometry(0.55*s,1.1*s,8),matTreeLeaves);
+  leaves2.position.y=2.8*s;leaves2.castShadow=true;g.add(leaves2);
+  g.position.set(x,0,z);return g;
+}
+
+function addGarden(){
+  if(gardenGroup){scene.remove(gardenGroup);gardenGroup=null;}
+  if(!walls.length)return;
+  const b=bounds();
+  const g=new THREE.Group();
+
+  const poolW=3.5,poolD=2.0,poolH=0.5;
+  const poolX=b.mxX+2.5,poolZ=cz();
+  const poolBody=new THREE.Mesh(new THREE.BoxGeometry(poolW,poolH,poolD),matWater);
+  poolBody.position.set(poolX,poolH/2-0.05,poolZ);poolBody.receiveShadow=true;g.add(poolBody);
+  const edgeT=0.12,edgeH=0.1;
+  const makeEdge=(w,d,x,z)=>{const e=new THREE.Mesh(new THREE.BoxGeometry(w,edgeH,d),matPoolEdge);e.position.set(x,0.1,z);e.receiveShadow=true;return e;};
+  g.add(makeEdge(poolW+edgeT*2,edgeT,poolX,poolZ+poolD/2+edgeT/2));
+  g.add(makeEdge(poolW+edgeT*2,edgeT,poolX,poolZ-poolD/2-edgeT/2));
+  g.add(makeEdge(edgeT,poolD,poolX+poolW/2+edgeT/2,poolZ));
+  g.add(makeEdge(edgeT,poolD,poolX-poolW/2-edgeT/2,poolZ));
+
+  const deckW=Math.min(4,b.mxX-b.mnX+1),deckD=2.5;
+  const deckX=(b.mnX+b.mxX)/2,deckZ=b.mxZ+1.8;
+  const deck=new THREE.Mesh(new THREE.BoxGeometry(deckW,0.08,deckD),matDeck);
+  deck.position.set(deckX,0.06,deckZ);deck.receiveShadow=true;g.add(deck);
+  for(let i=0;i<5;i++){
+    const plank=new THREE.Mesh(new THREE.BoxGeometry(deckW-0.1,0.005,0.04),matTrim);
+    plank.position.set(deckX,0.1,deckZ-deckD/2+(i+1)*deckD/6);g.add(plank);
+  }
+
+  const hx=b.mnX-0.8,hz=b.mnZ-0.8,hw=b.mxX-b.mnX+1.6,hd=b.mxZ-b.mnZ+1.6;
+  const makeHedge=(w,d,x,z)=>{const h=new THREE.Mesh(new THREE.BoxGeometry(w,0.5,d),matHedge);h.position.set(x,0.25,z);h.castShadow=h.receiveShadow=true;return h;};
+  g.add(makeHedge(hw,0.25,(b.mnX+b.mxX)/2,b.mnZ-0.8));
+  g.add(makeHedge(hw,0.25,(b.mnX+b.mxX)/2,b.mxZ+0.8));
+  g.add(makeHedge(0.25,hd,b.mnX-0.8,(b.mnZ+b.mxZ)/2));
+  g.add(makeHedge(0.25,hd-1.6,b.mxX+0.8,(b.mnZ+b.mxZ)/2+0.8));
+  g.add(makeHedge(0.25,hd-1.6,b.mxX+0.8,(b.mnZ+b.mxZ)/2-0.8));
+
+  g.add(addTree(b.mnX-2,b.mnZ-1.5,1.0));
+  g.add(addTree(b.mxX+2,b.mxZ+2,0.85));
+  g.add(addTree(b.mnX-1.5,b.mxZ+2,0.9));
+  g.add(addTree(b.mxX+2.5,b.mnZ-2,0.75));
+
+  for(let i=0;i<Math.floor(hw/1.5);i++){
+    const post=new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.05,0.7,6),matFence);
+    post.position.set(b.mnX-0.8+i*1.5,0.35,b.mnZ-1.1);
+    post.castShadow=true;g.add(post);
+  }
+
+  scene.add(g);gardenGroup=g;
+}
+
+// ═══════════════════════════════════
+//  TEMPLATES
+// ═══════════════════════════════════
+function clearScene(){
+  [...walls,...windows,...doors,...furniture].forEach(o=>{scene.remove(o);});
+  walls.length=0;windows.length=0;doors.length=0;furniture.length=0;pillars.length=0;undoStack.length=0;
+  interiorPanels.forEach(p=>{scene.remove(p);});interiorPanels=[];
+  baseboards.forEach(b=>{scene.remove(b);});baseboards=[];
+  if(foundationMesh){scene.remove(foundationMesh);foundationMesh=null;}
+  if(floorMesh){scene.remove(floorMesh);floorMesh=null;}
+  if(ceilingMesh){scene.remove(ceilingMesh);ceilingMesh=null;}
+  if(roofGroup){scene.remove(roofGroup);roofGroup=null;}
+  if(gardenGroup){scene.remove(gardenGroup);gardenGroup=null;}
+  clearPreview();drawActive=false;wallStart=null;lastWallEnd=null;endpoints.length=0;
+}
+
+function addW(walls_){ walls_.forEach(([sx,sz,ex,ez])=>{const w=createWallGeom(sx,sz,ex,ez,WALL_H,matWall);if(w){scene.add(w);walls.push(w);}});}
+function addWin(x,z,ry){const w=createWindowAsset();w.position.set(x,0,z);w.rotation.y=ry;scene.add(w);windows.push(w);}
+function addDr(x,z,ry){const d=createDoorAsset();d.position.set(x,0,z);d.rotation.y=ry;scene.add(d);doors.push(d);}
+function addFur(name,x,z,ry=0){const f=cloneFurniture(name);if(!f)return;f.position.set(x,0,z);f.rotation.y=ry;scene.add(f);furniture.push(f);}
+
+function loadTemplate(name){
+  clearScene();
+  const b=(name==='studio')?{walls:[[0,0,4,0],[4,0,4,4],[4,4,0,4],[0,4,0,0]],windows:[[0.5,2,0],[3.5,2,Math.PI]],doors:[[2,0.2,0]],furniture:[['sofa',1,3.5,0],['coffeeTable',2,2.5],['rug',2,2.5],['lamp',0.5,3.5],['plant',3.5,0.5]],roof:'flat'}
+  :(name==='cottage')?{walls:[[0,0,6,0],[6,0,6,4],[6,4,4,4],[4,4,4,4.5],[4,4.5,2,4.5],[2,4.5,2,4],[2,4,0,4],[0,4,0,0]],windows:[[0.5,2,0],[5.5,1.5,Math.PI],[5.5,3,Math.PI]],doors:[[3,0.2,0]],furniture:[['bed',5,3.5,Math.PI/2],['bookshelf',0.5,3.5],['rug',3,2],['lamp',5.5,1.5],['plant',0.5,1]],roof:'gable'}
+  :(name==='family')?{walls:[[0,0,7,0],[7,0,7,5],[7,5,0,5],[0,5,0,0],[3.5,0,3.5,3],[3.5,3,3.5,5]],windows:[[1,2,0],[5.5,1.5,Math.PI],[5.5,4,Math.PI],[0.5,1.5,Math.PI/2]],doors:[[2.5,0.2,0],[4.5,3.2,0]],furniture:[['sofa',1.5,4.5,0],['coffeeTable',3,4.5],['table',5.5,1.5],['chair',5,1],['chair',6,1.5],['kitchen',6,4,Math.PI],['plant',0.5,0.5],['lamp',6.5,0.5]],roof:'gable'}
+  :(name==='lshape')?{walls:[[0,0,6,0],[6,0,6,2],[6,2,3,2],[3,2,3,6],[3,6,0,6],[0,6,0,0]],windows:[[0.5,3,0],[5.5,1,Math.PI/2],[1.5,5.8,0],[4.5,5.8,0]],doors:[[1.5,0.2,0]],furniture:[['bed',5,4.5,Math.PI/2],['bookshelf',0.5,5],['rug',1.5,3.5],['lamp',5.5,1],['plant',4.5,5.5]],roof:'flat'}
+  :{walls:[[0,0,8,0],[8,0,8,6],[8,6,0,6],[0,6,0,0],[2.5,0,2.5,3.5],[5.5,0,5.5,6],[2.5,3.5,5.5,3.5]],windows:[[1,2,0],[7,1.5,Math.PI],[7,4.5,Math.PI],[4,5.8,0],[0.5,4.5,Math.PI/2]],doors:[[3.5,0.2,0],[6.5,4,Math.PI/2]],furniture:[['sofa',1.5,1.5,0],['coffeeTable',3,1.5],['bed',7,5.5,Math.PI],['table',6,1.5],['chair',7,1],['kitchen',1.5,5,0],['plant',0.5,5.5],['lamp',7.5,3.5]],roof:'gable'};
+
+  addW(b.walls);rebuildAll();
+  b.windows.forEach(w=>addWin(w[0],w[1],w[2]));
+  b.doors.forEach(d=>addDr(d[0],d[1],d[2]));
+  b.furniture.forEach(f=>addFur(f[0],f[1],f[2],f[3]||0));
+  roofType=b.roof;applyRoof();
+  const bb=bounds();const sp=Math.max(bb.mxX-bb.mnX,bb.mxZ-bb.mnZ);
+  camera.position.set((bb.mnX+bb.mxX)/2+sp,sp*0.8,(bb.mnZ+bb.mxZ)/2+sp);
+  orbit.target.set((bb.mnX+bb.mxX)/2,0,(bb.mnZ+bb.mxZ)/2);orbit.update();
+  document.querySelectorAll('.side-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('btnOrbit').classList.add('active');
+  tool='orbit';mode='';canvas.classList.add('placing');
+  infoBar.innerHTML='Template: <span class="text-[#B8C876] font-bold">'+name+'</span> &bull; '+walls.length+' walls &bull; '+windows.length+' windows &bull; '+doors.length+' doors';
+  updateCounts();
+}
+function updateCounts(){
+  document.getElementById('wallCount').textContent=walls.length+' walls';
+  document.getElementById('btnUndo').disabled=undoStack.length===0;
+}
+
+// ═══════════════════════════════════
+//  PREMIUM FURNITURE CATALOG
+// ═══════════════════════════════════
+
+// ── Sofa (3-seater modern) ──
+function createSofa(){
+  const g=new THREE.Group();
+  const fabricMat=new THREE.MeshStandardMaterial({color:'#4a5568',roughness:0.7}); // charcoal grey
+  const cushionMat=new THREE.MeshStandardMaterial({color:'#5a6778',roughness:0.65});
+  const legMat=new THREE.MeshStandardMaterial({color:'#3a3a3a',roughness:0.3,metalness:0.5});
+
+  // Base platform
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(2.2,0.12,0.85),fabricMat).translateY(0.22));
+  // Seat cushions (3)
+  for(let i=-1;i<=1;i++){
+    g.add(new THREE.Mesh(new THREE.BoxGeometry(0.65,0.14,0.75),cushionMat).translateX(i*0.7).translateY(0.35));
+  }
+  // Backrest
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(2.1,0.55,0.18),fabricMat).translateY(0.65).translateZ(-0.33));
+  // Armrests
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.15,0.35,0.85),fabricMat).translateX(-1.1).translateY(0.35).translateZ(0.02));
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.15,0.35,0.85),fabricMat).translateX(1.1).translateY(0.35).translateZ(0.02));
+  // Legs
+  [[-1,0.06,0.35],[1,0.06,0.35],[-1,0.06,-0.35],[1,0.06,-0.35]].forEach(([x,y,z])=>{
+    g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.04,0.12,8),legMat).translateX(x).translateY(y).translateZ(z));
+  });
+  return g;
+}
+
+// ── Coffee Table ──
+function createCoffeeTable(){
+  const g=new THREE.Group();
+  const topMat=new THREE.MeshStandardMaterial({color:'#e8dcc8',roughness:0.35,metalness:0.03}); // marble-look
+  const legMat=new THREE.MeshStandardMaterial({color:'#3a3a3a',roughness:0.3,metalness:0.5});
+
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(1.0,0.06,0.6),topMat).translateY(0.45));
+  [[-0.42,0.22,0.22],[0.42,0.22,0.22],[-0.42,0.22,-0.22],[0.42,0.22,-0.22]].forEach(([x,y,z])=>{
+    g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,0.44,8),legMat).translateX(x).translateY(y).translateZ(z));
+  });
+  // Lower shelf
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.8,0.03,0.4),new THREE.MeshStandardMaterial({color:'#d4c8b0',roughness:0.5})).translateY(0.22));
+  return g;
+}
+
+// ── Rug ──
+function createRug(){
+  const g=new THREE.Group();
+  const rugMat=new THREE.MeshStandardMaterial({color:'#c4956a',roughness:0.85,metalness:0});
+  const borderMat=new THREE.MeshStandardMaterial({color:'#b08060',roughness:0.8,metalness:0});
+
+  g.add(new THREE.Mesh(new THREE.PlaneGeometry(2.0,1.4),rugMat).rotateX(-Math.PI/2).translateY(0.005));
+  g.add(new THREE.Mesh(new THREE.PlaneGeometry(2.1,1.5),borderMat).rotateX(-Math.PI/2).translateY(0.002));
+  return g;
+}
+
+// ── Bed (queen size) ──
+function createBed(){
+  const g=new THREE.Group();
+  const frameMat=new THREE.MeshStandardMaterial({color:'#6b5b4f',roughness:0.5}); // walnut
+  const mattressMat=new THREE.MeshStandardMaterial({color:'#f5f0e8',roughness:0.7});
+  const pillowMat=new THREE.MeshStandardMaterial({color:'#e8e0d5',roughness:0.75});
+  const blanketMat=new THREE.MeshStandardMaterial({color:'#7a8a9a',roughness:0.7});
+
+  // Bed frame
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(1.7,0.15,2.1),frameMat).translateY(0.15));
+  // Headboard
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(1.7,0.8,0.08),frameMat).translateY(0.6).translateZ(-1.0));
+  // Mattress
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(1.55,0.18,1.95),mattressMat).translateY(0.32));
+  // Pillows
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.55,0.1,0.3),pillowMat).translateX(-0.4).translateY(0.42).translateZ(-0.8));
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.55,0.1,0.3),pillowMat).translateX(0.4).translateY(0.42).translateZ(-0.8));
+  // Blanket (folded at foot)
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(1.4,0.06,0.5),blanketMat).translateY(0.43).translateZ(0.7));
+  // Legs
+  [[-0.75,0.05,0.95],[0.75,0.05,0.95],[-0.75,0.05,-0.95],[0.75,0.05,-0.95]].forEach(([x,y,z])=>{
+    g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.04,0.1,8),frameMat).translateX(x).translateY(y).translateZ(z));
+  });
+  return g;
+}
+
+// ── Bookshelf ──
+function createBookshelf(){
+  const g=new THREE.Group();
+  const woodMat=new THREE.MeshStandardMaterial({color:'#8B7355',roughness:0.5});
+  const shelfMat=new THREE.MeshStandardMaterial({color:'#9B8365',roughness:0.45});
+  const bookColors=['#c44','#48c','#c94','#594','#a5a','#e84','#38a','#d55'];
+
+  // Frame
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.9,1.8,0.35),woodMat).translateY(0.9));
+  // Shelves (4 shelves)
+  for(let i=0;i<4;i++){
+    g.add(new THREE.Mesh(new THREE.BoxGeometry(0.82,0.03,0.3),shelfMat).translateY(0.2+i*0.45));
+  }
+  // Books (random colored boxes)
+  for(let shelf=0;shelf<4;shelf++){
+    const sy=0.25+shelf*0.45;
+    let bx=-0.35;
+    for(let b=0;b<4;b++){
+      const bw=0.06+Math.random()*0.08, bh=0.1+Math.random()*0.12;
+      const col=bookColors[Math.floor(Math.random()*bookColors.length)];
+      const bookMat=new THREE.MeshStandardMaterial({color:col,roughness:0.5});
+      g.add(new THREE.Mesh(new THREE.BoxGeometry(bw,bh,0.22),bookMat).translateX(bx+bw/2).translateY(sy+bh/2).translateZ(0.02));
+      bx+=bw+0.02;
+      if(bx>0.3)break;
+    }
+  }
+  return g;
+}
+
+// ── Kitchen Island ──
+function createKitchen(){
+  const g=new THREE.Group();
+  const counterMat=new THREE.MeshStandardMaterial({color:'#e8e0d5',roughness:0.25,metalness:0.05}); // quartz
+  const cabinetMat=new THREE.MeshStandardMaterial({color:'#5a5a5a',roughness:0.4,metalness:0.1}); // dark grey
+  const handleMat=new THREE.MeshStandardMaterial({color:'#c0c0c0',roughness:0.2,metalness:0.9});
+
+  // Countertop
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(1.6,0.06,0.8),counterMat).translateY(0.93));
+  // Cabinet body
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(1.5,0.86,0.72),cabinetMat).translateY(0.47));
+  // Cabinet doors (2)
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.68,0.75,0.02),new THREE.MeshStandardMaterial({color:'#4a4a4a',roughness:0.4})).translateX(-0.38).translateY(0.45).translateZ(0.36));
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.68,0.75,0.02),new THREE.MeshStandardMaterial({color:'#4a4a4a',roughness:0.4})).translateX(0.38).translateY(0.45).translateZ(0.36));
+  // Handles
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.015,0.015,0.08,8),handleMat).rotateX(Math.PI/2).translateX(-0.38).translateY(0.45).translateZ(0.37));
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.015,0.015,0.08,8),handleMat).rotateX(Math.PI/2).translateX(0.38).translateY(0.45).translateZ(0.37));
+  // Toe kick
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(1.4,0.08,0.6),new THREE.MeshStandardMaterial({color:'#333',roughness:0.5})).translateY(0.04));
+  return g;
+}
+
+// ── Chair (dining, more detailed) ──
+function createChair(){
+  const g=new THREE.Group();
+  const seatMat=new THREE.MeshStandardMaterial({color:'#6b5b4f',roughness:0.5});
+  const legMat=new THREE.MeshStandardMaterial({color:'#3a3a3a',roughness:0.3,metalness:0.5});
+  const backMat=new THREE.MeshStandardMaterial({color:'#7a6b5f',roughness:0.45});
+
+  // Seat
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.48,0.05,0.48),seatMat).translateY(0.46));
+  // Backrest
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.44,0.45,0.04),backMat).translateY(0.7).translateZ(-0.22));
+  // Backrest slats
+  for(let i=-1;i<=1;i++){
+    g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.02,0.4,6),backMat).translateX(i*0.13).translateY(0.68).translateZ(-0.21));
+  }
+  // Legs
+  [[-0.2,0.23,0.2],[0.2,0.23,0.2],[-0.2,0.23,-0.2],[0.2,0.23,-0.2]].forEach(([x,y,z])=>{
+    g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.035,0.04,0.45,8),legMat).translateX(x).translateY(y).translateZ(z));
+  });
+  // Cross bar
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.02,0.4,6),legMat).translateY(0.25).translateZ(-0.15).rotateX(Math.PI/2));
+  return g;
+}
+
+// ── Dining Table ──
+function createTable(){
+  const g=new THREE.Group();
+  const topMat=new THREE.MeshStandardMaterial({color:'#d4c4a8',roughness:0.35,metalness:0.03});
+  const legMat=new THREE.MeshStandardMaterial({color:'#3a3a3a',roughness:0.3,metalness:0.5});
+
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(1.4,0.07,0.9),topMat).translateY(0.78));
+  // 4 legs with slight taper (use cylinders)
+  [[-0.6,0.39,0.35],[0.6,0.39,0.35],[-0.6,0.39,-0.35],[0.6,0.39,-0.35]].forEach(([x,y,z])=>{
+    g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.05,0.77,8),legMat).translateX(x).translateY(y).translateZ(z));
+  });
+  // Cross beam
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(1.2,0.04,0.04),legMat).translateY(0.36).translateZ(0.2));
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(1.2,0.04,0.04),legMat).translateY(0.36).translateZ(-0.2));
+  return g;
+}
+
+// ── Floor Lamp (elegant) ──
+function createLamp(){
+  const g=new THREE.Group();
+  const poleMat=new THREE.MeshStandardMaterial({color:'#3a3a3a',roughness:0.2,metalness:0.7});
+  const shadeMat=new THREE.MeshStandardMaterial({color:'#f5efe0',roughness:0.5,side:THREE.DoubleSide});
+  const baseMat=new THREE.MeshStandardMaterial({color:'#2a2a2a',roughness:0.2,metalness:0.8});
+
+  // Base
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.18,0.06,24),baseMat).translateY(0.03));
+  // Pole
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.025,0.03,1.7,12),poleMat).translateY(0.88));
+  // Shade
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.1,0.28,0.55,24,1,true),shadeMat).translateY(1.72));
+  // Finial
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(0.04,8,6),poleMat).translateY(2.0));
+  return g;
+}
+
+// ── Plant (detailed potted) ──
+function createPlant(){
+  const g=new THREE.Group();
+  const potMat=new THREE.MeshStandardMaterial({color:'#c47a4a',roughness:0.55});
+  const leafMat=new THREE.MeshStandardMaterial({color:'#4a8a2a',roughness:0.65});
+  const leafMat2=new THREE.MeshStandardMaterial({color:'#5a9a3a',roughness:0.6});
+
+  // Pot
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.14,0.11,0.38,16),potMat).translateY(0.19));
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.14,0.06,16),potMat).translateY(0.4));
+  // Foliage (multiple spheres for natural look)
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(0.28,8,6),leafMat).translateY(0.55));
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(0.22,8,6),leafMat2).translateY(0.62).translateX(0.14).translateZ(0.08));
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(0.18,8,6),leafMat).translateY(0.58).translateX(-0.12).translateZ(-0.06));
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(0.15,8,6),leafMat2).translateY(0.68).translateX(0.0).translateZ(-0.1));
+  return g;
+}
+
+// ── Window (professional frame) ──
+function createWindowAsset(){
+  const g=new THREE.Group();
+  const frameMat=new THREE.MeshStandardMaterial({color:'#2a2a2a',roughness:0.3,metalness:0.6});
+  const glassMat=new THREE.MeshStandardMaterial({color:'#b8ddf0',roughness:0.08,metalness:0.1,transparent:true,opacity:0.45});
+
+  // Outer frame
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(1.05,1.25,0.06),frameMat).translateY(1.6));
+  // Glass
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.88,1.08,0.02),glassMat).translateY(1.6));
+  // Cross bars (mullions)
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.88,0.04,0.04),frameMat).translateY(1.6));
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.04,1.08,0.04),frameMat).translateY(1.6));
+  // Sill
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(1.05,0.05,0.1),frameMat).translateY(1.0));
+
+  g.traverse(c=>{if(c.isMesh){c.castShadow=true;c.receiveShadow=true;c.userData={...c.userData,asset:'window'};}});
+  g.userData={isWindow:true,asset:'window'};
+  return g;
+}
+
+// ── Door (premium) ──
+function createDoorAsset(){
+  const g=new THREE.Group();
+  const frameMat=new THREE.MeshStandardMaterial({color:'#2a2a2a',roughness:0.25,metalness:0.6});
+  const panelMat=new THREE.MeshStandardMaterial({color:'#5a4020',roughness:0.45,metalness:0.05});
+  const handleMat=new THREE.MeshStandardMaterial({color:'#d4b060',roughness:0.15,metalness:0.9});
+
+  // Frame
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(1.05,2.25,0.08),frameMat).translateY(1.12));
+  // Door panel
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.82,2.05,0.06),panelMat).translateY(1.1).translateZ(0.02));
+  // Panel detail (recessed)
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.6,1.2,0.005),new THREE.MeshStandardMaterial({color:'#4a3520',roughness:0.5})).translateY(1.3).translateZ(0.05));
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.6,0.5,0.005),new THREE.MeshStandardMaterial({color:'#4a3520',roughness:0.5})).translateY(0.5).translateZ(0.05));
+  // Handle
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.025,0.025,0.12,8),handleMat).rotateX(Math.PI/2).translateX(0.35).translateY(1.1).translateZ(0.07));
+
+  g.traverse(c=>{if(c.isMesh){c.castShadow=true;c.receiveShadow=true;c.userData={...c.userData,asset:'door'};}});
+  g.userData={isDoor:true,asset:'door'};
+  return g;
+}
+
+// Catalog
+const furnitureCatalog={
+  chair:createChair,
+  table:createTable,
+  lamp:createLamp,
+  plant:createPlant,
+  sofa:createSofa,
+  coffeeTable:createCoffeeTable,
+  rug:createRug,
+  bed:createBed,
+  bookshelf:createBookshelf,
+  kitchen:createKitchen,
 };
 
-function loadTemplate(name) {
-  resetAll(false);
-  const t = templates[name];
-  if (!t) return;
-
-  const allWalls = [...t.exterior, ...(t.interior || [])];
-  allWalls.forEach(([sx, sz, ex, ez]) => {
-    const mat = t.interior && t.interior.some(iw => iw[0]===sx&&iw[1]===sz&&iw[2]===ex&&iw[3]===ez) ? matWallInner : matWall;
-    const wall = createWall(sx, sz, ex, ez, mat);
-    if (wall) { scene.add(wall); walls.push(wall); }
-  });
-
-  rebuildAll();
-
-  let minX=Infinity,maxX=-Infinity,minZ=Infinity,maxZ=-Infinity;
-  walls.forEach(w => { const d=w.userData; minX=Math.min(minX,d.startX,d.endX); maxX=Math.max(maxX,d.startX,d.endX); minZ=Math.min(minZ,d.startZ,d.endZ); maxZ=Math.max(maxZ,d.startZ,d.endZ); });
-  const cx=(minX+maxX)/2, cz=(minZ+maxZ)/2, span=Math.max(maxX-minX,maxZ-minZ);
-  controls.target.set(cx,0,cz);
-  camera.position.set(cx+span*1.2, span*0.9, cz+span*1.2);
-  camera.lookAt(cx,0,cz);
-  controls.update();
-  undoStack = [];
-  updateUndoBtn();
-  info.innerHTML = 'Template: <span>' + name + '</span> &bull; ' + walls.length + ' walls &bull; ' + windows.length + ' windows &bull; ' + roofType + ' roof';
+function cloneFurniture(name){
+  if(name==='window')return createWindowAsset();
+  if(name==='door')return createDoorAsset();
+  const fn=furnitureCatalog[name];
+  if(!fn)return null;
+  const g=fn();
+  g.traverse(c=>{if(c.isMesh){c.castShadow=true;c.receiveShadow=true;c.userData={...c.userData,asset:name};}});
+  g.userData={isFurniture:true,asset:name};
+  return g;
 }
 
-// ── Reset ──
-function resetAll(saveUndo = true) {
-  if (saveUndo && walls.length > 0) {
-    const saved = walls.map(w => ({
-      sx: w.userData.startX, sz: w.userData.startZ,
-      ex: w.userData.endX, ez: w.userData.endZ
-    }));
-    pushUndo(UndoAction.RESET, { walls: saved });
-  }
-  walls.forEach(w => { scene.remove(w); w.geometry?.dispose(); });
-  walls = [];
-  removeWindows(); removeDoors(); removePillars();
-  removeFoundation(); removeFloor(); removeCeiling(); removeRoof();
-  removePreview();
-  wallStart = null; lastWallEnd = null; drawActive = false;
+// ═══════════════════════════════════
+//  WALL SNAPPING (window/door)
+// ═══════════════════════════════════
+function snapToWall(pt){
+  if(!walls.length)return null;
+  mouseV.x=(pt.x/window.innerWidth)*2-1;
+  mouseV.y=-(pt.y/window.innerHeight)*2+1;
+  raycaster.setFromCamera(mouseV,camera);
+  const hits=raycaster.intersectObjects(walls);
+  if(!hits.length)return null;
+  const hit=hits[0];
+  const w=hit.object;if(!w.userData.isWall)return null;
+  const hp=hit.point;
+  const d=w.userData;
+  const dx=d.endX-d.startX,dz=d.endZ-d.startZ;
+  const len=Math.hypot(dx,dz);
+  const ux=dx/len,uz=dz/len;
+  const t=((hp.x-d.startX)*ux+(hp.z-d.startZ)*uz)/len;
+  const clampedT=Math.max(0.15,Math.min(0.85,t));
+  const wx=d.startX+dx*clampedT,wz=d.startZ+dz*clampedT;
+  const angle=Math.atan2(dx,dz);
+  const nx=Math.sin(angle)*(WALL_T/2+0.02),nz=Math.cos(angle)*(WALL_T/2+0.02);
+  return{x:wx+nx,z:wz+nz,angle};
 }
 
-// ── Export ──
-function exportGLB() {
-  if (walls.length === 0) { info.innerHTML = '<span>Nothing to export!</span> Build something first'; return; }
-  info.innerHTML = '<span>Exporting...</span>';
-  const exporter = new GLTFExporter();
-  exporter.parse(scene, (gltf) => {
-    const blob = new Blob([gltf], { type: 'application/octet-stream' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'instabuild-house.glb'; a.click();
-    URL.revokeObjectURL(url);
-    info.innerHTML = 'Exported as <span>instabuild-house.glb</span> &bull; ' + walls.length + ' walls';
-  }, (err) => { info.innerHTML = '<span>Export failed:</span> ' + err; }, { binary: true });
+// ═══════════════════════════════════
+//  GHOST PREVIEW
+// ═══════════════════════════════════
+function createGhost(mesh){
+  if(previewObj){scene.remove(previewObj);previewObj=null;}
+  if(!mesh)return;
+  mesh.traverse(c=>{if(c.isMesh){c.material=Array.isArray(c.material)?c.material.map(()=>matGhost):matGhost;c.renderOrder=999;}});
+  mesh.renderOrder=999;
+  previewObj=mesh;scene.add(previewObj);
 }
 
-// ── Canvas Events ──
-canvas.addEventListener('pointerdown', (e) => {
-  if (mode !== 'drawWall' || e.button !== 0) return;
-  const pt = getGround(e); if (!pt) return;
-  let px = pt.x, pz = pt.z;
+// ═══════════════════════════════════
+//  MAIN INTERACTION
+// ═══════════════════════════════════
+canvas.addEventListener('pointerdown',ev=>{
+  if(ev.button!==0)return;
+  const pt=getGround(ev);
 
-  if (!drawActive) {
-    const sp = findSnapPoint(px, pz);
-    if (sp) { px = sp.x; pz = sp.z; }
-    wallStart = { x: px, z: pz };
-    lastWallEnd = wallStart;
-    drawActive = true;
-    info.innerHTML = 'Drawing wall — <span>drag</span> to extend &bull; <span>Shift</span> = snap 90° &bull; Click to finish';
-  } else {
-    // Finishing current wall segment
-    if (e.shiftKey) {
-      const snapped = snapTo90(lastWallEnd.x, lastWallEnd.z, px, pz);
-      px = snapped.x; pz = snapped.z;
-    }
-    const sp = findSnapPoint(px, pz);
-    if (sp) { px = sp.x; pz = sp.z; }
-    if (px === lastWallEnd.x && pz === lastWallEnd.z) { drawActive = false; return; }
-
-    const wall = createWall(lastWallEnd.x, lastWallEnd.z, px, pz, matWall);
-    if (wall) {
-      scene.add(wall); walls.push(wall);
-      pushUndo(UndoAction.ADD_WALL, null);
-    }
-    lastWallEnd = { x: px, z: pz };
-    wallStart = null;
-    removePreview();
-    rebuildAll();
-    drawActive = false;
-    info.innerHTML = 'Click to <span>start next wall</span> &bull; Walls: <span>' + walls.length + '</span>';
-  }
-});
-
-let lastSnapPos = null;
-
-canvas.addEventListener('pointermove', (e) => {
-  // Snap indicator
-  if (mode === 'drawWall') {
-    const raw = getRawGround(e);
-    if (raw) {
-      const sp = findSnapPoint(snap(raw.x), snap(raw.z));
-      const pos = sp || { x: snap(raw.x), z: snap(raw.z) };
-      const screen = projectTo3D(pos.x, pos.z);
-      snapDot.style.left = screen.x + 'px';
-      snapDot.style.top = screen.y + 'px';
-      snapDot.style.display = 'block';
-      if (sp) {
-        snapDot.style.background = 'rgba(184,200,118,0.9)';
-        snapDot.style.width = '18px'; snapDot.style.height = '18px';
-      } else {
-        snapDot.style.background = 'rgba(184,200,118,0.35)';
-        snapDot.style.width = '12px'; snapDot.style.height = '12px';
-      }
-      lastSnapPos = pos;
-    }
-  } else {
-    snapDot.style.display = 'none';
-  }
-
-  // Delete hover
-  if (mode === 'delete') {
-    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-    raycaster.setFromCamera(mouse, camera);
-    const targets = [...walls];
-    if (ceilingMesh) targets.push(...ceilingMesh.children.filter(c => c.isMesh));
-    const hits = raycaster.intersectObjects(targets, true);
-    walls.forEach(w => w.material = matWall);
-    if (ceilingMesh) ceilingMesh.children.forEach(c => { if (c.material) c.material = matCeiling; });
-    if (hits.length > 0) {
-      let obj = hits[0].object;
-      while (obj && !obj.userData?.isWall && !obj.userData?.isCeiling) obj = obj.parent;
-      if (obj?.material) obj.material = matHover;
+  if(tool==='drawWall'&&mode==='build'){
+    if(!pt)return;
+    let x=grid.snap(pt.x),z=grid.snap(pt.z);
+    if(!drawActive){
+      const sp=grid.nearest(x,z,endpoints);
+      if(sp){x=sp.x;z=sp.z;}
+      wallStart={x,z};drawActive=true;lastWallEnd=wallStart;
+      infoBar.innerHTML='Drawing wall — <span class="text-[#B8C876] font-bold">click</span> to finish &bull; <span class="text-[#B8C876] font-bold">Shift</span>=snap 90°';
+    }else{
+      if(ev.shiftKey){const s=grid.snap90(lastWallEnd.x,lastWallEnd.z,x,z);x=s.x;z=s.z;}
+      const sp=grid.nearest(x,z,endpoints);if(sp){x=sp.x;z=sp.z;}
+      if(x===lastWallEnd.x&&z===lastWallEnd.z){drawActive=false;clearPreview();return;}
+      const wall=createWallGeom(lastWallEnd.x,lastWallEnd.z,x,z,WALL_H,matWall);
+      if(wall){scene.add(wall);walls.push(wall);undoStack.push(wall);}
+      lastWallEnd={x,z};wallStart=null;clearPreview();drawActive=false;rebuildAll();
+      infoBar.innerHTML='Click to <span class="text-[#B8C876] font-bold">start next wall</span> &bull; Walls: <span class="text-[#B8C876] font-bold">'+walls.length+'</span>';
     }
     return;
   }
 
-  // Draw wall preview
-  if (mode !== 'drawWall' || !drawActive || !lastWallEnd) return;
-  const raw = getRawGround(e);
-  if (!raw) return;
-  let px = snap(raw.x), pz = snap(raw.z);
-
-  if (e.shiftKey) {
-    const snapped = snapTo90(lastWallEnd.x, lastWallEnd.z, px, pz);
-    px = snapped.x; pz = snapped.z;
-  }
-  const sp = findSnapPoint(px, pz);
-  if (sp) { px = sp.x; pz = sp.z; }
-
-  removePreview();
-  const wall = createWall(lastWallEnd.x, lastWallEnd.z, px, pz, matPreview);
-  if (wall) { previewWall = wall; scene.add(previewWall); }
-});
-
-canvas.addEventListener('click', (e) => {
-  if (mode !== 'delete') return;
-  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-  raycaster.setFromCamera(mouse, camera);
-  const targets = [...walls];
-  if (ceilingMesh) targets.push(...ceilingMesh.children.filter(c => c.isMesh));
-  if (roofGroup) targets.push(...roofGroup.children.filter(c => c.isMesh));
-  const hits = raycaster.intersectObjects(targets, true);
-  if (hits.length > 0) {
-    let obj = hits[0].object;
-    while (obj && !obj.userData?.isWall && !obj.userData?.isCeiling && !obj.userData?.isRoof) obj = obj.parent;
-    if (!obj) return;
-    if (obj.userData.isWall) {
-      const idx = walls.indexOf(obj);
-      if (idx !== -1) {
-        scene.remove(obj); obj.geometry?.dispose();
-        walls.splice(idx, 1);
-        rebuildAll();
-        info.innerHTML = 'Wall deleted. Walls: <span>' + walls.length + '</span>';
-      }
-    } else if (obj.userData.isCeiling) {
-      removeCeiling();
-      info.innerHTML = 'Ceiling removed. Use <span>Roof</span> to re-add';
-    } else if (obj.userData.isRoof) {
-      removeRoof();
-      info.innerHTML = 'Roof removed. Use <span>Roof</span> to re-add';
+  if(tool==='window'&&mode==='build'){
+    const snapped=snapToWall({x:ev.clientX,y:ev.clientY});
+    if(snapped){
+      const win=createWindowAsset();win.position.set(snapped.x,0,snapped.z);win.rotation.y=snapped.angle;
+      scene.add(win);windows.push(win);undoStack.push(win);
+      infoBar.innerHTML='Window placed &bull; Windows: <span class="text-[#B8C876] font-bold">'+windows.length+'</span>';
+    }else if(pt){
+      const s=grid.snapV3(pt);
+      const win=createWindowAsset();win.position.copy(s);
+      scene.add(win);windows.push(win);undoStack.push(win);
+      infoBar.innerHTML='Window placed on ground &bull; Click near a <span class="text-[#B8C876] font-bold">wall</span> to snap';
     }
+    return;
   }
-});
 
-// Prevent orbit during wall drawing
-canvas.addEventListener('pointerdown', (e) => {
-  if (mode === 'drawWall' && e.button === 0) {
-    e.stopPropagation();
-  }
-}, true);
-
-// Keyboard shortcuts
-window.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    if (mode === 'drawWall') {
-      drawActive = false; removePreview(); wallStart = null; lastWallEnd = null;
-      setMode('orbit');
+  if(tool==='door'&&mode==='build'){
+    const snapped=snapToWall({x:ev.clientX,y:ev.clientY});
+    if(snapped){
+      const dr=createDoorAsset();dr.position.set(snapped.x,0,snapped.z);dr.rotation.y=snapped.angle;
+      scene.add(dr);doors.push(dr);undoStack.push(dr);
+      infoBar.innerHTML='Door placed &bull; Doors: <span class="text-[#B8C876] font-bold">'+doors.length+'</span>';
+    }else if(pt){
+      const s=grid.snapV3(pt);
+      const dr=createDoorAsset();dr.position.copy(s);
+      scene.add(dr);doors.push(dr);undoStack.push(dr);
+      infoBar.innerHTML='Door placed on ground &bull; Click near a <span class="text-[#B8C876] font-bold">wall</span> to snap';
     }
+    return;
   }
-  if (e.ctrlKey && e.key === 'z') {
-    e.preventDefault();
-    performUndo();
+
+  // Furnish mode
+  if(mode==='furnish'&&furnitureCatalog[tool]&&pt){
+    const s=grid.snapV3(pt);
+    const item=cloneFurniture(tool);if(!item)return;
+    item.position.copy(s);scene.add(item);furniture.push(item);undoStack.push(item);
+    infoBar.innerHTML='Placed <span class="text-[#B8C876] font-bold">'+tool+'</span> at ('+s.x.toFixed(1)+', '+s.z.toFixed(1)+') &bull; Items: <span class="text-[#B8C876] font-bold">'+furniture.length+'</span>';
+    return;
   }
-  if (e.key === 'r' && !e.ctrlKey && mode === 'orbit') {
-    roofType = roofType === 'flat' ? 'gable' : 'flat';
+
+  if(tool==='roof'&&mode==='build'){
+    roofType=roofType==='flat'?'gable':'flat';
     applyRoof();
-    info.innerHTML = 'Roof: <span>' + roofType + '</span> &bull; Press R to toggle';
+    infoBar.innerHTML='Roof: <span class="text-[#B8C876] font-bold">'+roofType+'</span> &bull; Click again to toggle';
+    return;
   }
 });
 
-// ── Buttons ──
-function setMode(newMode) {
-  mode = newMode;
-  drawActive = false; removePreview(); wallStart = null; lastWallEnd = null;
-  snapDot.style.display = 'none';
-  walls.forEach(w => w.material = matWall);
-  canvas.classList.toggle('placing', mode === 'drawWall');
-  controls.mouseButtons.LEFT = (mode === 'orbit') ? THREE.MOUSE.ROTATE : null;
-  controls.mouseButtons.RIGHT = (mode === 'orbit') ? null : THREE.MOUSE.ROTATE;
-  document.querySelectorAll('.toolbar .tool-btn').forEach(b => b.classList.remove('active'));
-  if (mode === 'orbit') document.getElementById('btnOrbit').classList.add('active');
-  else if (mode === 'drawWall') document.getElementById('btnDrawWall').classList.add('active');
-  else if (mode === 'delete') document.getElementById('btnDelete').classList.add('active');
+canvas.addEventListener('pointermove',ev=>{
+  snapDot.style.display='none';
 
-  if (mode === 'orbit')
-    info.innerHTML = '<span>Left-click + drag</span> to orbit &bull; <span>R</span> toggle roof &bull; Walls: <span>' + walls.length + '</span>';
-  else if (mode === 'drawWall')
-    info.innerHTML = 'Click to <span>start wall</span> &bull; <span>Shift</span>=snap 90° &bull; Click endpoint to chain &bull; Esc to cancel';
-  else if (mode === 'delete')
-    info.innerHTML = 'Click wall/roof to <span>delete</span> &bull; Walls: <span>' + walls.length + '</span>';
-}
-
-document.getElementById('btnOrbit').addEventListener('click', () => setMode('orbit'));
-document.getElementById('btnDrawWall').addEventListener('click', () => setMode('drawWall'));
-document.getElementById('btnDelete').addEventListener('click', () => setMode('delete'));
-document.getElementById('btnRoof').addEventListener('click', () => {
-  setMode('orbit');
-  roofType = roofType === 'flat' ? 'gable' : 'flat';
-  applyRoof();
-  info.innerHTML = 'Roof: <span>' + roofType + '</span> &bull; Press R to toggle';
+  if(tool==='drawWall'&&mode==='build'){
+    const pt=getGround(ev);if(!pt)return;
+    let x=grid.snap(pt.x),z=grid.snap(pt.z);
+    const sp=grid.nearest(x,z,endpoints);
+    const isSnap=!!sp;if(sp){x=sp.x;z=sp.z;}
+    const sc=toScreen(x,z);snapDot.style.left=sc.x+'px';snapDot.style.top=sc.y+'px';snapDot.style.display='block';
+    snapDot.style.width=isSnap?'18px':'12px';snapDot.style.height=isSnap?'18px':'12px';
+    snapDot.style.background=isSnap?'rgba(184,200,118,0.95)':'rgba(184,200,118,0.4)';
+    if(drawActive&&lastWallEnd){
+      let px=x,pz=z;if(ev.shiftKey){const s=grid.snap90(lastWallEnd.x,lastWallEnd.z,x,z);px=s.x;pz=s.z;}
+      clearPreview();
+      const pw=createWallGeom(lastWallEnd.x,lastWallEnd.z,px,pz,WALL_H,matPreview);
+      if(pw){pw.renderOrder=999;previewObj=pw;scene.add(previewObj);}
+    }
+    return;
+  }
+  if((tool==='window'||tool==='door')&&mode==='build'){
+    snapDot.style.left=ev.clientX+'px';snapDot.style.top=ev.clientY+'px';snapDot.style.display='block';
+    snapDot.style.width='14px';snapDot.style.height='14px';snapDot.style.background='rgba(184,200,118,0.7)';
+    return;
+  }
+  // Furnish ghost preview
+  if(mode==='furnish'&&furnitureCatalog[tool]){
+    const pt=getGround(ev);if(!pt)return;
+    const s=grid.snapV3(pt);
+    if(!previewObj||previewObj.userData?.asset!==tool){clearPreview();const g=cloneFurniture(tool);if(g){g.traverse(c=>{if(c.isMesh){c.material=matGhost;c.renderOrder=999;}});g.renderOrder=999;previewObj=g;scene.add(previewObj);}}
+    if(previewObj)previewObj.position.copy(s);
+    snapDot.style.left=ev.clientX+'px';snapDot.style.top=ev.clientY+'px';snapDot.style.display='block';
+    return;
+  }
+  clearPreview();
 });
-document.getElementById('btnUndo').addEventListener('click', () => performUndo());
-document.getElementById('btnReset').addEventListener('click', () => {
-  resetAll(true);
-  setMode('orbit');
-  info.innerHTML = 'Cleared. Pick a <span>template</span> or build from scratch';
-});
-document.getElementById('btnExport').addEventListener('click', () => exportGLB());
 
-document.querySelectorAll('.template-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    setMode('orbit');
-    loadTemplate(btn.dataset.template);
+window.addEventListener('keydown',ev=>{
+  if(ev.key==='Escape'){
+    if(tourActive){stopTour();return;}
+    drawActive=false;clearPreview();wallStart=null;lastWallEnd=null;snapDot.style.display='none';
+    infoBar.innerHTML='Cancelled. Click <span class="text-[#B8C876] font-bold">Draw Wall</span> to start';
+  }
+  if(ev.key==='t'||ev.key==='T'){
+    if(tourActive){stopTour();}else{startTour();}
+  }
+});
+
+// ═══════════════════════════════════
+//  UI BUTTONS
+// ═══════════════════════════════════
+document.querySelectorAll('.side-btn[data-tool]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const t=btn.dataset.tool;const m=btn.dataset.mode||'orbit';
+    tool=t;mode=m;
+    drawActive=false;clearPreview();wallStart=null;lastWallEnd=null;snapDot.style.display='none';
+    canvas.classList.toggle('placing',t!=='orbit');
+    orbit.mouseButtons.LEFT=(t==='orbit')?THREE.MOUSE.ROTATE:null;
+    orbit.mouseButtons.RIGHT=(t==='orbit')?null:THREE.MOUSE.ROTATE;
+
+    document.querySelectorAll('.side-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+
+    if(t==='drawWall')infoBar.innerHTML='Click <span class="text-[#B8C876] font-bold">ground</span> to start wall &bull; <span class="text-[#B8C876] font-bold">Shift</span>=snap 90° &bull; <span class="text-[#B8C876] font-bold">Esc</span>=cancel';
+    else if(t==='roof'){
+      roofType=roofType==='flat'?'gable':'flat';
+      applyRoof();
+      infoBar.innerHTML='Roof toggled: <span class="text-[#B8C876] font-bold">'+roofType+'</span> &bull; Click again to switch';
+    }
+    else if(t==='window')infoBar.innerHTML='Click <span class="text-[#B8C876] font-bold">on a wall</span> to snap window &bull; or ground for free placement';
+    else if(t==='door')infoBar.innerHTML='Click <span class="text-[#B8C876] font-bold">on a wall</span> to snap door &bull; or ground for free placement';
+    else if(m==='furnish')infoBar.innerHTML='Click <span class="text-[#B8C876] font-bold">ground</span> to place <span class="text-[#B8C876] font-bold">'+t+'</span> &bull; Snaps to 0.5m grid';
+    else infoBar.innerHTML='<span class="text-[#B8C876] font-bold">Left+drag</span> orbit &bull; <span class="text-[#B8C876] font-bold">Scroll</span> zoom &bull; Walls: <span class="text-[#B8C876] font-bold">'+walls.length+'</span>';
   });
 });
 
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+document.getElementById('btnUndo').addEventListener('click',()=>{
+  const item=undoStack.pop();if(!item)return;
+  scene.remove(item);
+  if(item.userData.isWall){const i=walls.indexOf(item);if(i!==-1)walls.splice(i,1);rebuildAll();}
+  else if(item.userData.isWindow){const i=windows.indexOf(item);if(i!==-1)windows.splice(i,1);}
+  else if(item.userData.isDoor){const i=doors.indexOf(item);if(i!==-1)doors.splice(i,1);}
+  else{const i=furniture.indexOf(item);if(i!==-1)furniture.splice(i,1);}
+  updateCounts();
+  infoBar.innerHTML='Undo &bull; Walls: <span class="text-[#B8C876] font-bold">'+walls.length+'</span>';
 });
 
-function animate() {
+document.getElementById('btnClear').addEventListener('click',()=>{
+  [...walls,...windows,...doors,...furniture].forEach(o=>{scene.remove(o);});
+  walls=[];windows=[];doors=[];furniture=[];pillars=[];undoStack=[];
+  interiorPanels.forEach(p=>{scene.remove(p);});interiorPanels=[];
+  baseboards.forEach(b=>{scene.remove(b);});baseboards=[];
+  if(foundationMesh){scene.remove(foundationMesh);foundationMesh=null;}
+  if(floorMesh){scene.remove(floorMesh);floorMesh=null;}
+  if(ceilingMesh){scene.remove(ceilingMesh);ceilingMesh=null;}
+  if(roofGroup){scene.remove(roofGroup);roofGroup=null;}
+  clearPreview();drawActive=false;wallStart=null;lastWallEnd=null;
+  endpoints.length=0;updateCounts();
+  infoBar.innerHTML='Cleared. Click <span class="text-[#B8C876] font-bold">Draw Wall</span> to start';
+});
+
+document.getElementById('btnExport').addEventListener('click',()=>{
+  if(!walls.length){infoBar.innerHTML='<span class="text-[#B8C876] font-bold">Nothing to export!</span>';return;}
+  import('three/addons/exporters/GLTFExporter.js').then(({GLTFExporter})=>{
+    new GLTFExporter().parse(scene,gltf=>{
+      const b=new Blob([gltf],{type:'application/octet-stream'});
+      const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='instabuild.glb';a.click();
+    },null,{binary:true});
+  });
+  infoBar.innerHTML='Exporting <span class="text-[#B8C876] font-bold">instabuild.glb</span>...';
+});
+
+document.getElementById('btnTour').addEventListener('click',()=>{
+  if(tourActive){stopTour();}else{startTour();}
+});
+
+document.querySelectorAll('.template-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>loadTemplate(btn.dataset.template));
+});
+
+// ═══════════════════════════════════
+//  TWEAKPANE
+// ═══════════════════════════════════
+try{
+  const pane=new Tweakpane.Pane({title:'Settings'});
+  const el=pane.element;if(el){el.style.position='fixed';el.style.top='24px';el.style.right='24px';el.style.zIndex='50';}
+  const lf=pane.addFolder({title:'Lighting',expanded:false});
+  lf.addInput(ambient,'intensity',{min:0,max:3,step:0.1,label:'Ambient'});
+  lf.addInput(sun,'intensity',{min:0,max:8,step:0.1,label:'Sun'});
+  const bf=pane.addFolder({title:'Build',expanded:false});
+  const bp={wallH:WALL_H,gridS:0.5};
+  bf.addInput(bp,'wallH',{min:2,max:6,step:0.1,label:'Wall Height'});
+  bf.addInput(bp,'gridS',{min:0.25,max:2,step:0.25,label:'Grid Snap'}).on('change',ev=>{grid.size=ev.value;});
+  window.__pane=pane;
+}catch(e){console.warn('Tweakpane:',e.message);}
+
+// ═══════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════
+let lastTime = performance.now();
+function animate(){
   requestAnimationFrame(animate);
-  controls.update();
+  const now = performance.now();
+  const dt = Math.min((now - lastTime) / 1000, 0.1);
+  lastTime = now;
+  if (tourActive) {
+    updateTour(dt);
+  } else {
+    orbit.update();
+  }
   renderer.render(scene, camera);
 }
 animate();
-console.log('🏗️ InstaBuild 3D Builder v2 — drag walls, gable roof, interior rooms');
+window.addEventListener('resize',()=>{camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight);});
+window.__instaBuild={grid,scene,camera,orbit,renderer,walls,windows,doors,furniture,createWallGeom,cloneFurniture,rebuildAll,ambient,sun};
+console.log('%c🏗️ InstaBuild %cProfessional %cready','color:#B8C876;font-weight:bold;','color:#fff;','color:#aaa;');
 </script>
-
 </body>
 </html>
