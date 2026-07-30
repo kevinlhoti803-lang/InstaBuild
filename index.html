@@ -1627,5 +1627,186 @@ function switchAuthTab(tab) {
 }
 </script>
 
+<!-- ── AI Assistant Chat ── -->
+<div id="aiChat">
+  <button id="aiChatBtn" onclick="toggleAiChat()">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+    Ask AI
+  </button>
+  <div id="aiChatWindow" style="display:none;">
+    <div id="aiChatHeader">
+      <span>InstaBuild AI Assistant</span>
+      <button onclick="toggleAiChat()">&times;</button>
+    </div>
+    <div id="aiChatMessages">
+      <div class="ai-msg bot">Hi! I'm the InstaBuild AI assistant. Ask me anything about our homes, pricing, services, or how to get started!</div>
+    </div>
+    <div id="aiChatInput">
+      <input type="text" id="aiInput" placeholder="Ask me anything..." onkeydown="if(event.key==='Enter')sendAiMsg()">
+      <button onclick="sendAiMsg()">Send</button>
+    </div>
+  </div>
+</div>
+
+<style>
+#aiChat { position:fixed; bottom:24px; right:24px; z-index:9999; font-family:'Inter',sans-serif; }
+#aiChatBtn {
+  display:flex; align-items:center; gap:8px; padding:14px 22px; border-radius:16px;
+  background:linear-gradient(135deg,#4B5320,#3A4218); color:#fff; border:none;
+  font-size:15px; font-weight:700; cursor:pointer; box-shadow:0 8px 30px rgba(75,83,32,0.35);
+  transition:all 0.25s;
+}
+#aiChatBtn:hover { transform:translateY(-2px); box-shadow:0 12px 40px rgba(75,83,32,0.5); }
+#aiChatWindow {
+  position:absolute; bottom:70px; right:0; width:370px; max-width:92vw; max-height:480px;
+  background:#fff; border-radius:20px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.25);
+  display:flex; flex-direction:column;
+}
+#aiChatHeader {
+  background:linear-gradient(135deg,#4B5320,#3A4218); color:#fff; padding:14px 18px;
+  font-weight:700; font-size:14px; display:flex; justify-content:space-between; align-items:center;
+}
+#aiChatHeader button { background:none; border:none; color:#fff; font-size:22px; cursor:pointer; }
+#aiChatMessages {
+  flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:10px;
+  max-height:350px; background:#fafaf7;
+}
+.ai-msg {
+  padding:10px 14px; border-radius:14px; font-size:13px; line-height:1.55; max-width:85%;
+  word-wrap:break-word; animation:msgIn 0.25s ease;
+}
+.ai-msg.bot { background:#F0F2E8; color:#2a2a2a; align-self:flex-start; border-bottom-left-radius:4px; }
+.ai-msg.user { background:#4B5320; color:#fff; align-self:flex-end; border-bottom-right-radius:4px; }
+@keyframes msgIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+#aiChatInput {
+  display:flex; gap:8px; padding:12px; border-top:1px solid rgba(0,0,0,0.06); background:#fff;
+}
+#aiChatInput input {
+  flex:1; padding:10px 14px; border-radius:12px; border:1.5px solid rgba(75,83,32,0.15);
+  font-family:'Inter',sans-serif; font-size:13px; outline:none; transition:all 0.2s;
+}
+#aiChatInput input:focus { border-color:#4B5320; box-shadow:0 0 0 3px rgba(75,83,32,0.06); }
+#aiChatInput button {
+  padding:10px 18px; background:#4B5320; color:#fff; border:none; border-radius:12px;
+  font-weight:700; font-size:13px; cursor:pointer; transition:all 0.2s;
+}
+#aiChatInput button:hover { background:#3A4218; }
+</style>
+
+<script>
+function toggleAiChat() {
+  const w = document.getElementById('aiChatWindow');
+  w.style.display = w.style.display === 'none' ? 'flex' : 'none';
+}
+
+function detectLang(q) {
+  const sq = ['çmim','kushton','sa','shpi','shtëpi','vend','shtete','kohë','garanc','shqip','përshëndetje','mirë','madhësi','studio','vil','familje','modular','kontakt','faleminderit','çka','si je','çfarë','ku','ndërto','punon'];
+  const de = ['preis','kostet','viel','haus','heime','wo','länder','zeit','lieferung','garantie','deutsch','hallo','guten','größe','studio','villa','familie','modular','kontakt','danke','was','wie','wo','bauen','arbeit'];
+  let sqScore = 0, deScore = 0;
+  sq.forEach(w => { if (q.includes(w)) sqScore++; });
+  de.forEach(w => { if (q.includes(w)) deScore++; });
+  if (sqScore > deScore && sqScore > 1) return 'sq';
+  if (deScore > sqScore && deScore > 1) return 'de';
+  return 'en';
+}
+
+function sendAiMsg() {
+  const input = document.getElementById('aiInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  const msgs = document.getElementById('aiChatMessages');
+  msgs.innerHTML += '<div class="ai-msg user">' + msg + '</div>';
+  input.value = '';
+  msgs.scrollTop = msgs.scrollHeight;
+
+  setTimeout(() => {
+    const q = msg.toLowerCase();
+    const lang = detectLang(q);
+    const reply = getAiReply(q, lang);
+    msgs.innerHTML += '<div class="ai-msg bot">' + reply + '</div>';
+    msgs.scrollTop = msgs.scrollHeight;
+  }, 600);
+}
+
+function getAiReply(q, lang) {
+  // ── PRICE ──
+  if (q.includes('price') || q.includes('cost') || q.includes('much') || q.includes('çmim') || q.includes('kushton') || q.includes('sa') || q.includes('preis') || q.includes('kostet') || q.includes('viel')) {
+    if (lang === 'sq') return 'Shtëpitë tona fillojnë nga <b>€19,900</b> për Pop-Up Studio 28m², deri në <b>€96,000</b> për Grand Villa 120m². Të gjitha çmimet përfshijnë dorëzimin dhe montimin!';
+    if (lang === 'de') return 'Unsere Häuser beginnen bei <b>€19.900</b> für das 28m² Pop-Up Studio, bis zu <b>€96.000</b> für die 120m² Grand Villa. Alle Preise inklusive Lieferung und Montage!';
+    return 'Our homes start from <b>€19,900</b> for the 28m² Pop-Up Studio, up to <b>€96,000</b> for the 120m² Grand Villa. All prices include delivery and setup!';
+  }
+  // ── SIZES ──
+  if (q.includes('size') || q.includes('m²') || q.includes('square') || q.includes('madhësi') || q.includes('model') || q.includes('größe') || q.includes('modell')) {
+    if (lang === 'sq') return 'Ne ofrojmë 8 modele: 28m² Studio, 45m² Compact, 65m² Family, 90m² Premium, 120m² Grand Villa, 55m² Alpine Chalet, 40m² Coastal Bungalow, dhe 85m² Duo-Split.';
+    if (lang === 'de') return 'Wir bieten 8 Modelle: 28m² Studio, 45m² Compact, 65m² Family, 90m² Premium, 120m² Grand Villa, 55m² Alpine Chalet, 40m² Coastal Bungalow und 85m² Duo-Split.';
+    return 'We offer 8 models: 28m² Studio, 45m² Compact, 65m² Family, 90m² Premium, 120m² Grand Villa, 55m² Alpine Chalet, 40m² Coastal Bungalow, and 85m² Duo-Split.';
+  }
+  // ── COUNTRIES ──
+  if (q.includes('country') || q.includes('where') || q.includes('location') || q.includes('vend') || q.includes('shtete') || q.includes('länder') || q.includes('wo')) {
+    if (lang === 'sq') return 'Ne operojmë në <b>9 shtete</b>: Kosovë (HQ), Turqi, Austri, Shqipëri, Gjermani, Zvicër, Maqedoni e Veriut, Itali, dhe Mal të Zi. Mbi 750+ shtëpi të ndërtuara!';
+    if (lang === 'de') return 'Wir sind in <b>9 Ländern</b> tätig: Kosovo (HQ), Türkei, Österreich, Albanien, Deutschland, Schweiz, Nordmazedonien, Italien und Montenegro. Über 750+ Häuser gebaut!';
+    return 'We operate in <b>9 countries</b>: Kosovo (HQ), Turkey, Austria, Albania, Germany, Switzerland, N. Macedonia, Italy, and Montenegro. Over 750+ homes built!';
+  }
+  // ── DELIVERY ──
+  if (q.includes('time') || q.includes('delivery') || q.includes('how long') || q.includes('kohë') || q.includes('dorëzim') || q.includes('lieferung') || q.includes('zeit') || q.includes('sa shpejt')) {
+    if (lang === 'sq') return 'Shtëpitë tona modulare dorëzohen dhe montohen për vetëm <b>48 orë</b> — pa nevojë për montim. Ndërtimet tradicionale zgjasin muaj; ne i bëjmë për ditë!';
+    if (lang === 'de') return 'Unsere Modulhäuser werden in nur <b>48 Stunden</b> geliefert und aufgebaut — keine Montage nötig. Traditionelle Bauten dauern Monate; wir brauchen Tage!';
+    return 'Our modular homes are delivered and set up in just <b>48 hours</b> — no assembly needed. Traditional builds take months; we take days.';
+  }
+  // ── HOW IT WORKS ──
+  if (q.includes('modular') || q.includes('prefab') || q.includes('how') || q.includes('si') || q.includes('funksionon') || q.includes('wie') || q.includes('funktioniert')) {
+    if (lang === 'sq') return 'InstaBuild përdor <b>ndërtim modular të parafabrikuar</b> — komponentët ndërtohen me precizion në fabrikën tonë, pastaj dorëzohen dhe montohen në vend. Kjo do të thotë kohë më të shpejta, më pak mbeturina dhe cilësi të qëndrueshme.';
+    if (lang === 'de') return 'InstaBuild verwendet <b>modulare Fertigbauweise</b> — Komponenten werden präzise in unserer Fabrik gefertigt, dann geliefert und vor Ort montiert. Das bedeutet schnellere Zeiten, weniger Abfall und gleichbleibende Qualität.';
+    return 'InstaBuild uses <b>modular prefab construction</b> — components are precision-built in our factory, then delivered and assembled on-site. This means faster timelines, less waste, and consistent quality.';
+  }
+  // ── CONTACT ──
+  if (q.includes('contact') || q.includes('email') || q.includes('phone') || q.includes('kontakt') || q.includes('tel') || q.includes('nummer')) {
+    if (lang === 'sq') return 'Na kontaktoni në <b>info@instabuild.com</b> ose telefononi <b>+383 44 123 456</b>. Selia jonë është në Prishtinë, Kosovë. Na ndiqni në Instagram @instabuildglobal!';
+    if (lang === 'de') return 'Kontaktieren Sie uns unter <b>info@instabuild.com</b> oder rufen Sie <b>+383 44 123 456</b> an. Unser Hauptsitz ist in Prishtina, Kosovo. Folgen Sie uns auf Instagram @instabuildglobal!';
+    return 'Contact us at <b>info@instabuild.com</b> or call <b>+383 44 123 456</b>. Our HQ is in Prishtina, Kosovo. You can also visit our Instagram @instabuildglobal!';
+  }
+  // ── WARRANTY ──
+  if (q.includes('warranty') || q.includes('guarantee') || q.includes('garanc')) {
+    if (lang === 'sq') return 'Çdo shtëpi InstaBuild vjen me <b>10 vjet garanci strukturore</b> dhe garancinë tonë të kënaqësisë së klientit 98%.';
+    if (lang === 'de') return 'Jedes InstaBuild-Haus kommt mit einer <b>10-jährigen Strukturgarantie</b> und unserer 98% Kundenzufriedenheitsgarantie.';
+    return 'Every InstaBuild home comes with a <b>10-year structural warranty</b> and our 98% client satisfaction guarantee.';
+  }
+  // ── STUDIO ──
+  if (q.includes('studio') || q.includes('28') || q.includes('pop-up') || q.includes('popup')) {
+    if (lang === 'sq') return '<b>Pop-Up Studio</b> është shtëpia jonë modulare 28m² me €19,900. Plotësisht e mobiluar, dorëzohet për 48 orë — perfekte për beqarë ose zyrë në shtëpi.';
+    if (lang === 'de') return 'Das <b>Pop-Up Studio</b> ist unser 28m² Modulhaus für €19.900. Voll möbliert, Lieferung in 48 Stunden — perfekt für Singles oder ein Home-Office.';
+    return 'The <b>Pop-Up Studio</b> is our signature 28m² modular home at €19,900. Fully furnished, delivered in 48 hours — perfect for singles or a home office.';
+  }
+  // ── VILLA ──
+  if (q.includes('villa') || q.includes('120') || q.includes('vil')) {
+    if (lang === 'sq') return '<b>Grand Villa</b> është shtëpia jonë kryesore 120m² me €96,000. Katër dhoma gjumi, dy banjo, garazh dopio, hapësirë kopshti dhe përfundime premium.';
+    if (lang === 'de') return 'Die <b>Grand Villa</b> ist unser Flaggschiff mit 120m² für €96.000. Vier Schlafzimmer, zwei Bäder, Doppelgarage, Garten und Premium-Ausstattung.';
+    return 'The <b>Grand Villa</b> is our flagship 120m² executive home at €96,000. Four bedrooms, two bathrooms, double garage, garden space, and premium finishes.';
+  }
+  // ── FAMILY ──
+  if (q.includes('family') || q.includes('65') || q.includes('familje') || q.includes('familie')) {
+    if (lang === 'sq') return '<b>Family Two-Bedroom</b> është 65m² me €46,800. Dy dhoma gjumi, hapësirë jetese e hapur, verandë e mbuluar — projektuar për familje në rritje.';
+    if (lang === 'de') return 'Das <b>Family Two-Bedroom</b> ist 65m² für €46.800. Zwei Schlafzimmer, offener Wohnbereich, überdachte Veranda — für wachsende Familien.';
+    return 'The <b>Family Two-Bedroom</b> is 65m² at €46,800. Two bedrooms, open living space, covered porch — designed for growing families.';
+  }
+  // ── GREETING ──
+  if (q.includes('hello') || q.includes('hi') || q.includes('hey') || q.includes('përshëndetje') || q.includes('tung') || q.includes('hallo') || q.includes('guten') || q.includes('moin') || q.includes('si je') || q.includes('wie geht')) {
+    if (lang === 'sq') return 'Përshëndetje! Unë jam asistenti AI i InstaBuild. Më pyet për shtëpitë tona, çmimet, kohën e dorëzimit, ose çfarëdo tjetër!';
+    if (lang === 'de') return 'Hallo! Ich bin der InstaBuild KI-Assistent. Fragen Sie mich nach unseren Häusern, Preisen, Lieferzeiten oder allem anderen!';
+    return 'Hello! I\'m the InstaBuild AI assistant. Ask me about our homes, prices, delivery times, or anything else!';
+  }
+  // ── THANKS ──
+  if (q.includes('thank') || q.includes('flm') || q.includes('faleminderit') || q.includes('danke') || q.includes('dankeschön')) {
+    if (lang === 'sq') return 'Të lutem! Më trego nëse ke pyetje të tjera për shtëpitë InstaBuild.';
+    if (lang === 'de') return 'Gern geschehen! Lassen Sie mich wissen, wenn Sie weitere Fragen zu InstaBuild-Häusern haben.';
+    return 'You\'re welcome! Let me know if you have any other questions about InstaBuild homes.';
+  }
+  // ── DEFAULT ──
+  if (lang === 'sq') return 'Pyetje e mirë! InstaBuild ka ndërtuar shtëpi modulare që nga viti 2010 me <b>750+ shtëpi</b> në 9 shtete. Ne ofrojmë 8 modele nga 28-120m², duke filluar nga €19,900. Shtëpitë tona dorëzohen dhe montohen për 48 orë me garanci 10 vjeçare. Për çfarë detajesh specifike mund të të ndihmoj?';
+  if (lang === 'de') return 'Gute Frage! InstaBuild baut seit 2010 Modulhäuser mit <b>750+ Häusern</b> in 9 Ländern. Wir bieten 8 Modelle von 28-120m², ab €19.900. Unsere Häuser werden in 48 Stunden geliefert und aufgebaut, mit 10 Jahren Garantie. Bei welchen Details kann ich helfen?';
+  return 'Great question! InstaBuild has been building modular homes since 2010 with <b>750+ homes</b> across 9 countries. We offer 8 models from 28-120m², starting at €19,900. Our homes are delivered and set up in 48 hours with a 10-year warranty. What specific details can I help with?';
+}
+</script>
+
 </body>
 </html>
