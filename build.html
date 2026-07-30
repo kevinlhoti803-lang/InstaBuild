@@ -293,6 +293,9 @@
     font-weight: 900;
     color: #fff;
     letter-spacing: -2px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
   }
   .showcase-info {
     padding: 20px 22px;
@@ -327,6 +330,94 @@
     font-size: 12px !important;
     padding: 5px 12px !important;
   }
+
+  /* ── House Detail Modal ── */
+  .detail-overlay {
+    display: none; position: fixed; inset: 0; z-index: 10000;
+    background: rgba(10,12,4,0.85); backdrop-filter: blur(8px);
+    align-items: center; justify-content: center;
+  }
+  .detail-overlay.show { display: flex; }
+  .detail-modal {
+    background: #fff; border-radius: 24px; overflow: hidden;
+    width: 540px; max-width: 94vw; max-height: 90vh; overflow-y: auto;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+    animation: detailIn 0.3s cubic-bezier(0.16,1,0.3,1);
+  }
+  @keyframes detailIn {
+    from { opacity: 0; transform: translateY(24px) scale(0.96); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .detail-hero {
+    height: 220px; background-size: cover; background-position: center;
+    position: relative; display: flex; align-items: flex-end;
+  }
+  .detail-hero::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(transparent 40%, rgba(0,0,0,0.65));
+  }
+  .detail-hero-badge {
+    position: absolute; top: 16px; right: 16px; z-index: 2;
+    padding: 6px 14px; border-radius: 50px; font-size: 12px;
+    font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .detail-close {
+    position: absolute; top: 12px; left: 12px; z-index: 3;
+    background: rgba(0,0,0,0.4); border: none; width: 36px; height: 36px;
+    border-radius: 50%; font-size: 20px; cursor: pointer;
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+  }
+  .detail-close:hover { background: rgba(0,0,0,0.6); }
+  .detail-hero h2 {
+    position: relative; z-index: 2; color: #fff; font-size: 26px;
+    font-weight: 900; letter-spacing: -0.5px; padding: 24px 28px; margin: 0;
+  }
+  .detail-body { padding: 28px; }
+  .detail-stats {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+    margin-bottom: 24px;
+  }
+  .detail-stat {
+    text-align: center; padding: 14px 8px; border-radius: 14px;
+    background: var(--off-white); border: 1px solid rgba(75,83,32,0.06);
+  }
+  .detail-stat .val {
+    font-size: 22px; font-weight: 900; color: var(--green);
+    letter-spacing: -0.5px;
+  }
+  .detail-stat .lbl {
+    font-size: 11px; color: var(--text-light); margin-top: 2px;
+    text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;
+  }
+  .detail-desc {
+    font-size: 15px; line-height: 1.7; color: var(--text);
+    margin-bottom: 20px;
+  }
+  .detail-features {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px;
+  }
+  .detail-feature {
+    padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600;
+    background: var(--green-light); color: var(--green);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .detail-price-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-top: 20px; border-top: 1px solid rgba(0,0,0,0.06);
+  }
+  .detail-price {
+    font-size: 32px; font-weight: 900; letter-spacing: -1px;
+    color: var(--text);
+  }
+  .detail-price span { font-size: 14px; font-weight: 500; color: var(--text-light); }
+  .btn-inquire {
+    padding: 14px 28px; background: var(--green); color: #fff;
+    border: none; border-radius: 12px; font-family: 'Inter', sans-serif;
+    font-size: 15px; font-weight: 700; cursor: pointer;
+    transition: all 0.25s;
+  }
+  .btn-inquire:hover { background: var(--green-dark); box-shadow: 0 8px 24px rgba(75,83,32,0.3); }
 
   /* ── Build Your Home ── */
   .builder-section {
@@ -513,6 +604,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
   }
   .house-visual svg {
     width: 80px;
@@ -703,20 +797,20 @@
       <label style="display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--green);margin-bottom:8px;">Plot Size</label>
       <div class="land-options" id="landSizes">
         <div class="land-opt" data-size="small">
-          <span class="size">300 m²</span>
-          <span class="dim">15 × 20m</span>
+          <span class="size">28 m²</span>
+          <span class="dim">Pop-Up Studio</span>
         </div>
         <div class="land-opt" data-size="medium">
-          <span class="size">500 m²</span>
-          <span class="dim">20 × 25m</span>
+          <span class="size">45 m²</span>
+          <span class="dim">Compact</span>
         </div>
         <div class="land-opt" data-size="large">
-          <span class="size">800 m²</span>
-          <span class="dim">25 × 32m</span>
+          <span class="size">65 m²</span>
+          <span class="dim">Family</span>
         </div>
         <div class="land-opt" data-size="xlarge">
-          <span class="size">1200 m²</span>
-          <span class="dim">30 × 40m</span>
+          <span class="size">120 m²</span>
+          <span class="dim">Villa</span>
         </div>
       </div>
 
@@ -815,42 +909,42 @@
   </div>
   <div class="showcase-grid">
     <div class="showcase-card">
-      <div class="showcase-visual" style="background:linear-gradient(135deg,#1a2e05,#3A4218);">🏢</div>
+      <div class="showcase-visual" style="background-image:url('Pristina-City-Center-15.webp');"></div>
       <div class="showcase-info">
         <h4>Prishtina Residential Complex</h4>
         <p>120-unit modular housing development — completed in 8 months with full occupancy.</p>
       </div>
     </div>
     <div class="showcase-card">
-      <div class="showcase-visual" style="background:linear-gradient(135deg,#4B5320,#3A4218);">🏗️</div>
+      <div class="showcase-visual" style="background-image:url('vienna.webp');"></div>
       <div class="showcase-info">
         <h4>Vienna Office Park</h4>
         <p>45 modular office units in Vienna's 22nd district — sustainable, fast, and under budget.</p>
       </div>
     </div>
     <div class="showcase-card">
-      <div class="showcase-visual" style="background:linear-gradient(135deg,#ff8c2e,#ff6b1a);">🏠</div>
+      <div class="showcase-visual" style="background-image:url('Istanbuls-five-best-Villa-Communities.jpeg.webp');"></div>
       <div class="showcase-info">
         <h4>Istanbul Villa Collection</h4>
         <p>22 luxury villas on the Asian side — traditional design meets modern prefab precision.</p>
       </div>
     </div>
     <div class="showcase-card">
-      <div class="showcase-visual" style="background:linear-gradient(135deg,#ffc74d,#ff8c2e);">🏘️</div>
+      <div class="showcase-visual" style="background-image:url('Lake_Zurich_Kipnis_ABI_001_+LR.webp');"></div>
       <div class="showcase-info">
         <h4>Zürich Lakeside Homes</h4>
         <p>12 premium eco-homes near Lake Zürich — LEED-certified with net-zero energy targets.</p>
       </div>
     </div>
     <div class="showcase-card">
-      <div class="showcase-visual" style="background:linear-gradient(135deg,#d4380d,#8b1a0a);">🏬</div>
+      <div class="showcase-visual" style="background-image:url('archi-tectonics-festival-city-tirana-albania-designboom-01.jpg');"></div>
       <div class="showcase-info">
         <h4>Tiranë Commercial Hub</h4>
         <p>Mixed-use complex with 35 residential units above retail — completed Q4 2025.</p>
       </div>
     </div>
     <div class="showcase-card">
-      <div class="showcase-visual" style="background:linear-gradient(135deg,#8b1a0a,#4a1008);">🏗️</div>
+      <div class="showcase-visual" style="background-image:url('bmw-group-fiz-gallery-image-2-1280x854.jpeg');"></div>
       <div class="showcase-info">
         <h4>Munich Innovation Center</h4>
         <p>30-unit tech campus with prefab laboratories — delivered 30% faster than traditional build.</p>
@@ -868,73 +962,275 @@
 (function() {
   const map = L.map('buildMap', {
     scrollWheelZoom: false,
-    zoomControl: true
+    zoomControl: true,
+    attributionControl: false
   }).setView([47.5, 18], 5);
 
-  // Solid black base
+  // Dark tile layer
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
     attribution: '', maxZoom: 18
   }).addTo(map);
 
-  const heatData = [
-    [42.6629,21.1655,1.00],[42.6650,21.1620,0.95],[42.6600,21.1700,0.90],
-    [42.6680,21.1600,0.85],[42.6550,21.1680,0.82],[42.6700,21.1550,0.78],
-    [42.6580,21.1750,0.75],[42.6720,21.1580,0.72],[42.6500,21.1720,0.68],
-    [42.6610,21.1630,0.88],[42.6630,21.1670,0.84],[42.6670,21.1570,0.76],
-    [42.6560,21.1610,0.70],[42.6710,21.1640,0.65],[42.6530,21.1730,0.60],
-    [42.6480,21.1660,0.55],[42.6780,21.1520,0.50],[42.6750,21.1750,0.45],
-    [42.6800,21.1400,0.42],[42.6900,21.1500,0.38],
-    [42.6350,21.0950,0.40],[42.6320,21.0900,0.35],[42.6380,21.1000,0.32],
-    [42.5200,21.1250,0.25],[42.5180,21.1300,0.22],
-    [42.9100,21.1900,0.28],[42.9080,21.1950,0.24],
-    [42.3700,21.1550,0.20],[42.4600,21.4700,0.18],
-    [42.2139,20.7397,0.15],[42.6600,20.2900,0.12],[42.8833,20.8667,0.10],[42.3800,20.4300,0.08],
-    [41.0082,28.9784,0.35],[41.0150,28.9850,0.32],[41.0050,28.9700,0.28],
-    [41.0120,28.9750,0.25],[41.0200,28.9900,0.22],
-    [39.9334,32.8597,0.22],[39.9400,32.8650,0.18],[39.9280,32.8500,0.15],
-    [48.2082,16.3738,0.30],[48.2150,16.3800,0.28],[48.2000,16.3700,0.25],
-    [48.2100,16.3650,0.22],[48.2200,16.3850,0.18],
-    [41.3275,19.8187,0.24],[41.3300,19.8250,0.20],[41.3200,19.8100,0.17],[41.3350,19.8200,0.15],
-    [48.1351,11.5820,0.22],[48.1400,11.5900,0.18],[48.1300,11.5750,0.15],
-    [52.5200,13.4050,0.16],[52.5250,13.4100,0.12],
-    [47.3769,8.5417,0.17],[47.3800,8.5500,0.13],[47.3700,8.5350,0.10],
-    [41.9973,21.4280,0.14],[42.0000,21.4350,0.10],
-    [45.4642,9.1900,0.10],[45.4700,9.1950,0.07],
-    [42.4300,18.7000,0.08],[42.4350,18.7100,0.05],
-  ];
+  // ── Dense heat data ──
+  function cluster(lat, lng, intensity, count, spread) {
+    const pts = [];
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const dist = Math.random() * spread;
+      const jitter = intensity * (0.6 + Math.random() * 0.4);
+      pts.push([lat + Math.cos(angle) * dist, lng + Math.sin(angle) * dist, Math.min(1, jitter)]);
+    }
+    return pts;
+  }
+  // Connect two cities with low-intensity corridor
+  function corridor(lat1, lng1, lat2, lng2, intensity, count) {
+    const pts = [];
+    for (let i = 0; i < count; i++) {
+      const t = Math.random();
+      const lat = lat1 + (lat2 - lat1) * t + (Math.random() - 0.5) * 0.3;
+      const lng = lng1 + (lng2 - lng1) * t + (Math.random() - 0.5) * 0.3;
+      pts.push([lat, lng, intensity * (0.5 + Math.random() * 0.5)]);
+    }
+    return pts;
+  }
 
+  const heatData = [].concat(
+    // ═══ KOSOVO — 500+ ═══
+    cluster(42.6629, 21.1655, 1.00, 40, 0.2),
+    cluster(42.6629, 21.1655, 0.90, 35, 0.4),
+    cluster(42.6629, 21.1655, 0.75, 30, 0.65),
+    cluster(42.6629, 21.1655, 0.55, 25, 0.9),
+    cluster(42.6700, 21.1500, 0.80, 20, 0.25),
+    cluster(42.6550, 21.1750, 0.70, 18, 0.28),
+    cluster(42.6800, 21.1400, 0.60, 15, 0.25),
+    cluster(42.6480, 21.1850, 0.55, 12, 0.22),
+    cluster(42.6900, 21.1300, 0.45, 10, 0.2),
+    // Prizren
+    cluster(42.2139, 20.7397, 0.45, 15, 0.12),
+    cluster(42.2139, 20.7397, 0.30, 10, 0.25),
+    // Peja
+    cluster(42.6600, 20.2900, 0.38, 12, 0.1),
+    cluster(42.6600, 20.2900, 0.22, 8, 0.2),
+    // Mitrovica
+    cluster(42.8833, 20.8667, 0.32, 10, 0.1),
+    cluster(42.8833, 20.8667, 0.18, 6, 0.18),
+    // Gjakova
+    cluster(42.3800, 20.4300, 0.28, 8, 0.08),
+    // Ferizaj
+    cluster(42.3700, 21.1550, 0.30, 8, 0.08),
+    // Gjilan
+    cluster(42.4600, 21.4700, 0.25, 6, 0.07),
+    // Podujeva
+    cluster(42.9100, 21.1900, 0.22, 5, 0.06),
+    // Kosovo corridors
+    corridor(42.6629, 21.1655, 42.2139, 20.7397, 0.20, 12),
+    corridor(42.6629, 21.1655, 42.6600, 20.2900, 0.18, 10),
+    corridor(42.6629, 21.1655, 42.8833, 20.8667, 0.15, 8),
+    corridor(42.6629, 21.1655, 42.3700, 21.1550, 0.16, 8),
+    corridor(42.6629, 21.1655, 42.4600, 21.4700, 0.14, 7),
+
+    // ═══ TURKEY — 55 ═══
+    cluster(41.0082, 28.9784, 0.65, 25, 0.25),
+    cluster(41.0082, 28.9784, 0.55, 20, 0.45),
+    cluster(41.0082, 28.9784, 0.42, 15, 0.7),
+    cluster(41.0150, 28.9850, 0.50, 15, 0.25),
+    cluster(41.0050, 28.9700, 0.45, 12, 0.25),
+    cluster(40.9950, 28.9600, 0.35, 10, 0.22),
+    cluster(41.0250, 28.9950, 0.30, 8, 0.2),
+    // Ankara
+    cluster(39.9334, 32.8597, 0.35, 12, 0.18),
+    cluster(39.9334, 32.8597, 0.22, 8, 0.3),
+    cluster(39.9400, 32.8650, 0.25, 8, 0.15),
+    // Izmir
+    cluster(38.4192, 27.1287, 0.22, 8, 0.1),
+    cluster(38.4192, 27.1287, 0.12, 5, 0.18),
+    // Antalya
+    cluster(36.8969, 30.7133, 0.18, 6, 0.08),
+    // Bursa
+    cluster(40.1885, 29.0610, 0.15, 5, 0.07),
+    // Turkey corridors
+    corridor(41.0082, 28.9784, 39.9334, 32.8597, 0.15, 10),
+    corridor(41.0082, 28.9784, 38.4192, 27.1287, 0.10, 6),
+
+    // ═══ AUSTRIA — 45 ═══
+    cluster(48.2082, 16.3738, 0.58, 22, 0.25),
+    cluster(48.2082, 16.3738, 0.48, 18, 0.45),
+    cluster(48.2082, 16.3738, 0.35, 14, 0.7),
+    cluster(48.2150, 16.3800, 0.42, 12, 0.22),
+    cluster(48.2000, 16.3700, 0.38, 10, 0.2),
+    // Graz
+    cluster(47.0707, 15.4395, 0.25, 10, 0.12),
+    cluster(47.0707, 15.4395, 0.15, 6, 0.22),
+    // Linz
+    cluster(48.3069, 14.2858, 0.20, 8, 0.1),
+    // Salzburg
+    cluster(47.8095, 13.0550, 0.18, 6, 0.08),
+    // Innsbruck
+    cluster(47.2692, 11.4041, 0.12, 4, 0.06),
+    // Austria corridors
+    corridor(48.2082, 16.3738, 47.0707, 15.4395, 0.12, 8),
+    corridor(48.2082, 16.3738, 48.3069, 14.2858, 0.10, 6),
+
+    // ═══ ALBANIA — 35 ═══
+    cluster(41.3275, 19.8187, 0.52, 20, 0.22),
+    cluster(41.3275, 19.8187, 0.42, 15, 0.4),
+    cluster(41.3275, 19.8187, 0.30, 12, 0.6),
+    cluster(41.3300, 19.8250, 0.38, 10, 0.2),
+    cluster(41.3200, 19.8100, 0.32, 8, 0.18),
+    // Durrës
+    cluster(41.3246, 19.4565, 0.25, 8, 0.1),
+    cluster(41.3246, 19.4565, 0.14, 5, 0.2),
+    // Vlorë
+    cluster(40.4535, 19.4885, 0.20, 6, 0.08),
+    // Shkodër
+    cluster(42.0693, 19.5126, 0.16, 5, 0.07),
+    // Elbasan
+    cluster(41.1125, 20.0822, 0.12, 4, 0.06),
+    // Albania corridors
+    corridor(41.3275, 19.8187, 41.3246, 19.4565, 0.15, 8),
+    corridor(41.3275, 19.8187, 42.0693, 19.5126, 0.10, 5),
+
+    // ═══ GERMANY — 30 ═══
+    cluster(48.1351, 11.5820, 0.50, 20, 0.25),
+    cluster(48.1351, 11.5820, 0.40, 15, 0.45),
+    cluster(48.1351, 11.5820, 0.28, 12, 0.7),
+    cluster(48.1400, 11.5900, 0.35, 10, 0.22),
+    cluster(48.1280, 11.5750, 0.30, 8, 0.2),
+    // Berlin
+    cluster(52.5200, 13.4050, 0.25, 10, 0.18),
+    cluster(52.5200, 13.4050, 0.15, 6, 0.3),
+    cluster(52.5250, 13.4100, 0.18, 6, 0.15),
+    // Frankfurt
+    cluster(50.1109, 8.6821, 0.18, 6, 0.1),
+    // Hamburg
+    cluster(53.5511, 9.9937, 0.15, 5, 0.08),
+    // Stuttgart
+    cluster(48.7758, 9.1829, 0.12, 4, 0.07),
+    // Düsseldorf
+    cluster(51.2277, 6.7735, 0.10, 3, 0.06),
+
+    // ═══ SWITZERLAND — 22 ═══
+    cluster(47.3769, 8.5417, 0.44, 18, 0.22),
+    cluster(47.3769, 8.5417, 0.34, 14, 0.38),
+    cluster(47.3769, 8.5417, 0.22, 10, 0.6),
+    cluster(47.3800, 8.5500, 0.28, 8, 0.18),
+    cluster(47.3700, 8.5350, 0.24, 6, 0.16),
+    // Geneva
+    cluster(46.2044, 6.1432, 0.18, 6, 0.1),
+    cluster(46.2044, 6.1432, 0.10, 4, 0.18),
+    // Basel
+    cluster(47.5596, 7.5886, 0.15, 5, 0.08),
+    // Bern
+    cluster(46.9480, 7.4474, 0.12, 4, 0.07),
+    // Switzerland corridor
+    corridor(47.3769, 8.5417, 46.2044, 6.1432, 0.10, 6),
+
+    // ═══ N. MACEDONIA — 18 ═══
+    cluster(41.9973, 21.4280, 0.38, 16, 0.2),
+    cluster(41.9973, 21.4280, 0.28, 12, 0.35),
+    cluster(41.9973, 21.4280, 0.18, 8, 0.5),
+    cluster(42.0000, 21.4350, 0.24, 7, 0.16),
+    // Bitola
+    cluster(41.0297, 21.3292, 0.14, 5, 0.08),
+    // Ohrid
+    cluster(41.1231, 20.8016, 0.12, 4, 0.07),
+    // Tetovo
+    cluster(42.0097, 20.9715, 0.10, 3, 0.05),
+    // N.Macedonia corridor
+    corridor(41.9973, 21.4280, 41.0297, 21.3292, 0.08, 5),
+
+    // ═══ ITALY — 12 ═══
+    cluster(45.4642, 9.1900, 0.32, 15, 0.2),
+    cluster(45.4642, 9.1900, 0.24, 10, 0.35),
+    cluster(45.4642, 9.1900, 0.16, 8, 0.5),
+    cluster(45.4700, 9.1950, 0.20, 6, 0.16),
+    // Rome
+    cluster(41.9028, 12.4964, 0.14, 6, 0.08),
+    cluster(41.9028, 12.4964, 0.08, 4, 0.15),
+    // Naples
+    cluster(40.8518, 14.2681, 0.10, 3, 0.06),
+    // Turin
+    cluster(45.0703, 7.6869, 0.08, 3, 0.05),
+    // Bologna
+    cluster(44.4949, 11.3426, 0.07, 2, 0.05),
+
+    // ═══ MONTENEGRO — 10 ═══
+    cluster(42.4300, 18.7000, 0.28, 12, 0.18),
+    cluster(42.4300, 18.7000, 0.20, 8, 0.3),
+    cluster(42.4300, 18.7000, 0.12, 6, 0.45),
+    cluster(42.4350, 18.7100, 0.16, 5, 0.15),
+    // Budva
+    cluster(42.2917, 18.8399, 0.12, 4, 0.07),
+    // Bar
+    cluster(42.0980, 19.0991, 0.10, 3, 0.06),
+    // Podgorica
+    cluster(42.4304, 19.2594, 0.08, 3, 0.05),
+    // Montenegro corridor
+    corridor(42.4300, 18.7000, 42.2917, 18.8399, 0.08, 4),
+
+    // ═══ CROSS-BORDER CORRIDORS (regional connectivity) ═══
+    corridor(42.6629, 21.1655, 41.9973, 21.4280, 0.10, 8),  // Kosovo ↔ N.Macedonia
+    corridor(41.3275, 19.8187, 41.9973, 21.4280, 0.08, 6),  // Albania ↔ N.Macedonia
+    corridor(41.3275, 19.8187, 42.4300, 18.7000, 0.07, 5),  // Albania ↔ Montenegro
+    corridor(48.2082, 16.3738, 48.1351, 11.5820, 0.10, 8),  // Vienna ↔ Munich
+    corridor(48.1351, 11.5820, 47.3769, 8.5417, 0.08, 6),   // Munich ↔ Zürich
+    corridor(45.4642, 9.1900, 47.3769, 8.5417, 0.07, 5),    // Milan ↔ Zürich
+    corridor(41.3275, 19.8187, 42.6629, 21.1655, 0.12, 7),  // Albania ↔ Kosovo
+  );
+
+  // ── Professional heat gradient (dark red → orange → gold) ──
   L.heatLayer(heatData, {
-    radius: 30, blur: 14, maxZoom: 10, max: 1.0,
+    radius: 28, blur: 16, maxZoom: 10, max: 1.0,
     gradient: {
-      0.00:'transparent',
-      0.03:'#2d0806',
-      0.08:'#6b1208',
-      0.16:'#b81c0a',
-      0.28:'#e8380d',
-      0.42:'#ff5c14',
-      0.58:'#ff8220',
-      0.75:'#ffa833',
-      0.90:'#ffcc44',
-      1.00:'#ffe866'
+      0.00: 'transparent',
+      0.04: '#1a0404',
+      0.10: '#4a0a06',
+      0.20: '#8b1a0a',
+      0.32: '#c4280c',
+      0.46: '#e84810',
+      0.58: '#ff6b1a',
+      0.72: '#ff9540',
+      0.84: '#ffb866',
+      0.94: '#ffd580',
+      1.00: '#ffeeaa'
     }
   }).addTo(map);
 
+  // ── City markers with glow ──
   const cities = [
-    {name:'Prishtina (HQ)',lat:42.6629,lng:21.1655,r:7},
-    {name:'Istanbul',lat:41.0082,lng:28.9784,r:5},
-    {name:'Vienna',lat:48.2082,lng:16.3738,r:5},
-    {name:'Tiranë',lat:41.3275,lng:19.8187,r:4},
-    {name:'Munich',lat:48.1351,lng:11.5820,r:4},
-    {name:'Zürich',lat:47.3769,lng:8.5417,r:3},
-    {name:'Skopje',lat:41.9973,lng:21.4280,r:3},
-    {name:'Milan',lat:45.4642,lng:9.1900,r:3},
+    {name:'Prishtina (HQ)',lat:42.6629,lng:21.1655,r:8,fill:'#ff5c14'},
+    {name:'Prizren',lat:42.2139,lng:20.7397,r:3,fill:'#ff8c2e'},
+    {name:'Peja',lat:42.6600,lng:20.2900,r:3,fill:'#ff8c2e'},
+    {name:'Mitrovica',lat:42.8833,lng:20.8667,r:2.5,fill:'#ffa040'},
+    {name:'Istanbul',lat:41.0082,lng:28.9784,r:6,fill:'#e8380d'},
+    {name:'Ankara',lat:39.9334,lng:32.8597,r:4,fill:'#ff8220'},
+    {name:'Vienna',lat:48.2082,lng:16.3738,r:5.5,fill:'#e8380d'},
+    {name:'Graz',lat:47.0707,lng:15.4395,r:3,fill:'#ffa040'},
+    {name:'Tiranë',lat:41.3275,lng:19.8187,r:5,fill:'#ff6b1a'},
+    {name:'Durrës',lat:41.3246,lng:19.4565,r:3,fill:'#ffa040'},
+    {name:'Munich',lat:48.1351,lng:11.5820,r:5,fill:'#ff8220'},
+    {name:'Berlin',lat:52.5200,lng:13.4050,r:3.5,fill:'#ffa040'},
+    {name:'Zürich',lat:47.3769,lng:8.5417,r:4.5,fill:'#ff8220'},
+    {name:'Geneva',lat:46.2044,lng:6.1432,r:2.5,fill:'#ffb866'},
+    {name:'Skopje',lat:41.9973,lng:21.4280,r:4,fill:'#ff8220'},
+    {name:'Ohrid',lat:41.1231,lng:20.8016,r:2,fill:'#ffb866'},
+    {name:'Milan',lat:45.4642,lng:9.1900,r:4,fill:'#ff8220'},
+    {name:'Rome',lat:41.9028,lng:12.4964,r:2.5,fill:'#ffb866'},
+    {name:'Kotor',lat:42.4300,lng:18.7000,r:3,fill:'#ffa040'},
+    {name:'Budva',lat:42.2917,lng:18.8399,r:2,fill:'#ffb866'},
   ];
 
   cities.forEach(c => {
-    L.circleMarker([c.lat,c.lng],{
-      radius:c.r,color:'#fff',fillColor:'#d4380d',fillOpacity:0.9,weight:2
-    }).addTo(map).bindTooltip(c.name,{
-      permanent:false,direction:'top',className:'map-tooltip',offset:[0,-8]
+    // Glow ring (larger, transparent)
+    L.circleMarker([c.lat, c.lng], {
+      radius: c.r + 5, color: c.fill, fillColor: c.fill,
+      fillOpacity: 0.12, weight: 1, opacity: 0.25
+    }).addTo(map);
+    // Core dot
+    L.circleMarker([c.lat, c.lng], {
+      radius: c.r, color: '#fff', fillColor: c.fill, fillOpacity: 0.95, weight: 2.5
+    }).addTo(map).bindTooltip(c.name, {
+      permanent: false, direction: 'top', className: 'map-tooltip', offset: [0, -10]
     });
   });
 })();
@@ -954,11 +1250,12 @@
     });
   });
 
-  const houses = [
+  window.houses = [
     {
       id:'popup28',name:'Pop-Up Studio',size:28,beds:1,baths:1,price:'€19,900',
       desc:'Our signature 28m² modular home. Fully furnished, delivered and set up in 48 hours — no assembly needed.',
       gradient:'linear-gradient(135deg,#4B5320,#3A4218)',badge:'Popular',badgeClass:'badge-popular',
+      photo:'Studio apartment2.jpg',
       lands:['small','medium','large','xlarge'],terrains:['flat','sloped','coastal','mountain'],
       countries:['kosovo','turkey','austria','albania','germany','switzerland','macedonia','italy','montenegro'],
       icon:'<rect x="4" y="10" width="16" height="12" rx="1"/><polygon points="2,10 12,3 22,10"/><rect x="9" y="15" width="6" height="7" rx="1"/>'
@@ -967,6 +1264,7 @@
       id:'compact45',name:'Compact One-Bedroom',size:45,beds:1,baths:1,price:'€32,500',
       desc:'Spacious open-plan 45m² with full kitchen, living area, and dedicated bedroom. Perfect for couples or singles.',
       gradient:'linear-gradient(135deg,#5a6a2a,#4B5320)',badge:'Value',badgeClass:'badge-value',
+      photo:'studio3.jpg',
       lands:['small','medium','large','xlarge'],terrains:['flat','sloped','coastal'],
       countries:['kosovo','turkey','austria','albania','germany','switzerland','macedonia','italy','montenegro'],
       icon:'<rect x="3" y="9" width="18" height="13" rx="1"/><polygon points="2,9 12,2 22,9"/><rect x="5" y="14" width="5" height="8" rx="1"/><rect x="14" y="15" width="5" height="7" rx="1"/>'
@@ -975,6 +1273,7 @@
       id:'family65',name:'Family Two-Bedroom',size:65,beds:2,baths:1,price:'€46,800',
       desc:'65m² family home with two bedrooms, open living space, and a covered porch. Designed for growing families.',
       gradient:'linear-gradient(135deg,#6b7a35,#5a6a2a)',badge:'Popular',badgeClass:'badge-popular',
+      photo:'image1.webp',
       lands:['medium','large','xlarge'],terrains:['flat','sloped','coastal'],
       countries:['kosovo','turkey','austria','albania','germany','switzerland','macedonia','italy','montenegro'],
       icon:'<rect x="2" y="8" width="20" height="14" rx="1"/><polygon points="1,8 12,2 23,8"/><rect x="4" y="13" width="5" height="9" rx="1"/><rect x="11" y="13" width="5" height="9" rx="1"/><rect x="18" y="15" width="3" height="7" rx="1"/>'
@@ -983,6 +1282,7 @@
       id:'premium90',name:'Premium Three-Bedroom',size:90,beds:3,baths:2,price:'€68,000',
       desc:'90m² luxury prefab with three bedrooms, two bathrooms, walk-in closet, and a 12m² terrace.',
       gradient:'linear-gradient(135deg,#7d8c40,#6b7a35)',badge:'Premium',badgeClass:'badge-premium',
+      photo:'image2.jpg',
       lands:['large','xlarge'],terrains:['flat','coastal'],
       countries:['kosovo','turkey','austria','germany','switzerland','italy'],
       icon:'<rect x="2" y="7" width="20" height="15" rx="1"/><polygon points="1,7 12,1 23,7"/><rect x="4" y="13" width="4" height="9" rx="1"/><rect x="10" y="13" width="4" height="9" rx="1"/><rect x="16" y="14" width="4" height="8" rx="1"/>'
@@ -991,6 +1291,7 @@
       id:'villa120',name:'Grand Villa',size:120,beds:4,baths:2,price:'€96,000',
       desc:'120m² executive villa — four bedrooms, double garage, garden space, and premium finishes throughout.',
       gradient:'linear-gradient(135deg,#8fa050,#7d8c40)',badge:'Premium',badgeClass:'badge-premium',
+      photo:'studio villa 1.jpg',
       lands:['xlarge'],terrains:['flat','coastal'],
       countries:['kosovo','turkey','austria','switzerland','italy'],
       icon:'<rect x="2" y="6" width="20" height="16" rx="1"/><polygon points="1,6 12,0 23,6"/><rect x="5" y="14" width="4" height="8" rx="1"/><rect x="11" y="14" width="4" height="8" rx="1"/><rect x="17" y="16" width="3" height="6" rx="1"/>'
@@ -999,6 +1300,7 @@
       id:'alpine55',name:'Alpine Chalet',size:55,beds:2,baths:1,price:'€52,000',
       desc:'55m² mountain chalet with A-frame roof, wood-burning stove, and panoramic windows. Built for mountain terrain.',
       gradient:'linear-gradient(135deg,#5a4828,#4B5320)',badge:'Premium',badgeClass:'badge-premium',
+      photo:'c.webp',
       lands:['medium','large','xlarge'],terrains:['sloped','mountain'],
       countries:['austria','switzerland','germany'],
       icon:'<polygon points="2,10 12,2 22,10"/><rect x="4" y="10" width="16" height="12" rx="1"/><rect x="9" y="15" width="6" height="7" rx="1"/>'
@@ -1007,6 +1309,7 @@
       id:'coastal40',name:'Coastal Bungalow',size:40,beds:1,baths:1,price:'€38,900',
       desc:'40m² beachside bungalow with wraparound deck, large sliding doors, and hurricane-rated construction.',
       gradient:'linear-gradient(135deg,#4a6b8a,#3a5a78)',badge:'Popular',badgeClass:'badge-popular',
+      photo:'b.webp',
       lands:['small','medium','large'],terrains:['coastal','flat'],
       countries:['turkey','albania','italy','montenegro'],
       icon:'<rect x="5" y="10" width="14" height="11" rx="1"/><polygon points="4,10 12,4 20,10"/><rect x="8" y="14" width="8" height="7" rx="2"/>'
@@ -1015,6 +1318,7 @@
       id:'duo85',name:'Duo-Split Home',size:85,beds:3,baths:2,price:'€74,500',
       desc:'85m² split-level design — two floors with separate living zones. Ideal for multi-generational families.',
       gradient:'linear-gradient(135deg,#6a5a3a,#5a4a2a)',badge:'Value',badgeClass:'badge-value',
+      photo:'a.webp',
       lands:['large','xlarge'],terrains:['flat','sloped'],
       countries:['kosovo','turkey','macedonia','albania'],
       icon:'<rect x="3" y="7" width="18" height="15" rx="1"/><polygon points="2,7 12,1 22,7"/><rect x="5" y="13" width="5" height="9" rx="1"/><rect x="13" y="14" width="5" height="8" rx="1"/>'
@@ -1047,7 +1351,7 @@
       return;
     }
 
-    let matches = houses.filter(h => {
+    let matches = window.houses.filter(h => {
       if (!h.lands.includes(selectedSize)) return false;
       if (country && !h.countries.includes(country)) return false;
       if (terrain && !h.terrains.includes(terrain)) return false;
@@ -1073,9 +1377,9 @@
     subtitle.textContent = matches.length + ' home' + (matches.length>1?'s':'') + ' available' + (parts.length ? ' in ' + parts.join(' · ') : '');
 
     grid.innerHTML = matches.map(h => `
-      <div class="house-card">
-        <div class="house-visual" style="background:${h.gradient};">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">${h.icon}</svg>
+      <div class="house-card" onclick="showHouseDetail('${h.id}')" style="cursor:pointer;">
+        <div class="house-visual" style="${h.photo ? `background-image:url('${h.photo}');` : `background:${h.gradient};`}">
+          ${h.photo ? '' : `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">${h.icon}</svg>`}
           <span class="house-badge ${h.badgeClass}">${h.badge}</span>
         </div>
         <div class="house-info">
@@ -1096,6 +1400,7 @@
             </div>
           </div>
           <div class="price">${h.price} <span>starting</span></div>
+          <button class="btn-inquire" style="width:100%;margin-top:10px;" onclick="event.stopPropagation();showHouseDetail('${h.id}')">View Details</button>
         </div>
       </div>
     `).join('');
@@ -1104,6 +1409,49 @@
     grid.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   };
 })();
+
+// ── House Detail Modal ──
+function showHouseDetail(id) {
+  const h = window.houses.find(x => x.id === id);
+  if (!h) return;
+  const overlay = document.getElementById('houseDetailOverlay');
+  const heroBg = h.photo ? `background-image:url('${h.photo}')` : `background:${h.gradient}`;
+  const features = [
+    'Modular Construction', 'Energy Efficient', '10-Year Warranty',
+    'Turnkey Delivery', 'Custom Finishes', 'Smart Home Ready'
+  ];
+  overlay.innerHTML = `
+    <div class="detail-overlay show" onclick="if(event.target===this)this.parentElement.innerHTML=''">
+      <div class="detail-modal" onclick="event.stopPropagation()">
+        <div class="detail-hero" style="${heroBg}">
+          <button class="detail-close" onclick="this.closest('.detail-overlay').parentElement.innerHTML=''">&times;</button>
+          <span class="detail-hero-badge badge-${h.badgeClass === 'badge-premium' ? 'premium' : h.badgeClass === 'badge-value' ? 'value' : 'popular'}">${h.badge}</span>
+          <h2>${h.name}</h2>
+        </div>
+        <div class="detail-body">
+          <div class="detail-stats">
+            <div class="detail-stat"><div class="val">${h.size}</div><div class="lbl">m² Area</div></div>
+            <div class="detail-stat"><div class="val">${h.beds}</div><div class="lbl">Bedroom${h.beds>1?'s':''}</div></div>
+            <div class="detail-stat"><div class="val">${h.baths}</div><div class="lbl">Bathroom${h.baths>1?'s':''}</div></div>
+            <div class="detail-stat"><div class="val">48h</div><div class="lbl">Delivery</div></div>
+          </div>
+          <div class="detail-desc">${h.desc}</div>
+          <div class="detail-features">
+            ${features.map(f => `<span class="detail-feature">${f}</span>`).join('')}
+          </div>
+          <div class="detail-price-row">
+            <div class="detail-price">${h.price} <span>starting price</span></div>
+            <button class="btn-inquire" onclick="alert('Thank you! We\\'ll contact you about the ${h.name}.')">Inquire Now</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  overlay.style.display = 'block';
+}
 </script>
+
+<div id="houseDetailOverlay"></div>
+
 </body>
 </html>

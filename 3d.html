@@ -352,11 +352,19 @@ const matChimney=new THREE.MeshStandardMaterial({color:'#9b6a5a',roughness:0.6,m
 const matPath=new THREE.MeshStandardMaterial({color:'#8a8a80',roughness:0.7});
 
 // Interior — premium palette
-const matWallInner=new THREE.MeshStandardMaterial({color:'#F7F3EC',roughness:0.55,metalness:0.01}); // warm cream
-const matFloor=new THREE.MeshStandardMaterial({color:'#C4A26C',roughness:0.4,metalness:0.02}); // rich oak
-const matCeiling=new THREE.MeshStandardMaterial({color:'#F5F1EA',roughness:0.6,metalness:0.01}); // white ceiling
-const matBaseboard=new THREE.MeshStandardMaterial({color:'#F0ECE5',roughness:0.45,metalness:0.02}); // white trim
-const matCeilingBeam=new THREE.MeshStandardMaterial({color:'#D4C8B0',roughness:0.5,metalness:0.03}); // exposed beam
+const matWallInner = new THREE.MeshStandardMaterial({color:'#F7F3EC',roughness:0.55,metalness:0.01}); // warm cream
+const matWallLower = new THREE.MeshStandardMaterial({color:'#E8E2D8',roughness:0.5,metalness:0.02}); // wainscoting
+const matChairRail = new THREE.MeshStandardMaterial({color:'#F0ECE5',roughness:0.4,metalness:0.03}); // chair rail white
+const matCrownMolding = new THREE.MeshStandardMaterial({color:'#F5F1EC',roughness:0.35,metalness:0.04}); // crown molding
+const matFloor = new THREE.MeshStandardMaterial({color:'#C4A26C',roughness:0.4,metalness:0.02}); // rich oak
+const matCeiling = new THREE.MeshStandardMaterial({color:'#F5F1EA',roughness:0.6,metalness:0.01}); // white ceiling
+const matBaseboard = new THREE.MeshStandardMaterial({color:'#F0ECE5',roughness:0.45,metalness:0.02}); // white trim
+const matCeilingBeam = new THREE.MeshStandardMaterial({color:'#D4C8B0',roughness:0.5,metalness:0.03}); // exposed beam
+const matPendantMetal = new THREE.MeshStandardMaterial({color:'#2a2a2a',roughness:0.15,metalness:0.8}); // pendant fixture
+const matPendantGlass = new THREE.MeshStandardMaterial({color:'#fff8e8',roughness:0.1,emissive:'#fff8e0',emissiveIntensity:0.4}); // pendant glow
+const matDoorInterior = new THREE.MeshStandardMaterial({color:'#e8dcc8',roughness:0.4,metalness:0.02}); // interior door
+const matDoorHandle = new THREE.MeshStandardMaterial({color:'#d4c090',roughness:0.15,metalness:0.8}); // brass handle
+const matWindowTrim = new THREE.MeshStandardMaterial({color:'#F0ECE5',roughness:0.4,metalness:0.02}); // window interior trim
 
 // Preview / ghost
 const matPreview=new THREE.MeshStandardMaterial({color:'#B8C876',roughness:0.3,metalness:0.05,transparent:true,opacity:0.45,depthWrite:false});
@@ -569,22 +577,31 @@ function addPillars(){
 }
 
 // ═══════════════════════════════════
-//  INTERIOR PANELS + BASEBOARDS
+//  INTERIOR PANELS + BASEBOARDS + CROWN MOLDING
 // ═══════════════════════════════════
-function addInteriorDetails(){
+let pendantLights = [];
+let interiorDoorMeshes = [];
+const WAINSCOT_H = 1.1; // Wainscoting height
+
+function addInteriorDetails() {
   // Clean previous
-  interiorPanels.forEach(p=>{scene.remove(p);if(p.geometry)p.geometry.dispose();});
-  interiorPanels=[];
-  baseboards.forEach(b=>{scene.remove(b);if(b.geometry)b.geometry.dispose();});
-  baseboards=[];
+  interiorPanels.forEach(p => { scene.remove(p); if (p.geometry) p.geometry.dispose(); });
+  interiorPanels = [];
+  baseboards.forEach(b => { scene.remove(b); if (b.geometry) b.geometry.dispose(); });
+  baseboards = [];
+  pendantLights.forEach(p => { scene.remove(p); });
+  pendantLights = [];
+  interiorDoorMeshes.forEach(d => { scene.remove(d); });
+  interiorDoorMeshes = [];
 
-  if(!walls.length)return;
-  const b=bounds();
-  const centerX=(b.mnX+b.mxX)/2, centerZ=(b.mnZ+b.mxZ)/2;
+  if (!walls.length) return;
+  const b = bounds();
+  const centerX = (b.mnX + b.mxX) / 2, centerZ = (b.mnZ + b.mxZ) / 2;
+  const areaW = b.mxX - b.mnX, areaD = b.mxZ - b.mnZ;
 
-  walls.forEach(w=>{
-    const d=w.userData;
-    const {nx, nz} = interiorNormal(d, centerX, centerZ);
+  walls.forEach(w => {
+    const d = w.userData;
+    const { nx, nz } = interiorNormal(d, centerX, centerZ);
     if (Math.abs(nx) < 0.001 && Math.abs(nz) < 0.001) return;
 
     const midX = (d.startX + d.endX) / 2, midZ = (d.startZ + d.endZ) / 2;
@@ -592,27 +609,99 @@ function addInteriorDetails(){
     const len = Math.hypot(dx, dz);
     const angle = Math.atan2(dx, dz);
 
-    // ── Interior wall panel (thin cream face) ──
-    const panelGeo = new THREE.PlaneGeometry(len - 0.04, WALL_H - 0.02);
-    const panel = new THREE.Mesh(panelGeo, matWallInner);
-    panel.position.set(midX + nx * (WALL_T/2 - 0.01), WALL_H/2, midZ + nz * (WALL_T/2 - 0.01));
-    panel.rotation.y = angle;
-    panel.receiveShadow = true;
-    panel.userData = { isInteriorPanel: true };
-    scene.add(panel);
-    interiorPanels.push(panel);
-
-    // ── Baseboard (white skirting) ──
+    // ── Baseboard only (no wall panel overlay) ──
     const bbH = 0.12, bbD = 0.03;
     const bbGeo = new THREE.BoxGeometry(len, bbH, bbD);
     const bb = new THREE.Mesh(bbGeo, matBaseboard);
-    bb.position.set(midX + nx * (WALL_T/2 + bbD/2), bbH/2, midZ + nz * (WALL_T/2 + bbD/2));
+    bb.position.set(midX + nx * (WALL_T / 2 + bbD / 2), bbH / 2, midZ + nz * (WALL_T / 2 + bbD / 2));
     bb.rotation.y = angle;
     bb.receiveShadow = true; bb.castShadow = true;
     bb.userData = { isBaseboard: true };
     scene.add(bb);
     baseboards.push(bb);
   });
+
+  // ── Pendant lights ──
+  const lightPositions = [];
+  if (areaW > 3 && areaD > 3) {
+    lightPositions.push({ x: centerX - areaW * 0.22, z: centerZ - areaD * 0.22 });
+    lightPositions.push({ x: centerX + areaW * 0.22, z: centerZ - areaD * 0.22 });
+    lightPositions.push({ x: centerX - areaW * 0.22, z: centerZ + areaD * 0.22 });
+    lightPositions.push({ x: centerX + areaW * 0.22, z: centerZ + areaD * 0.22 });
+  } else {
+    lightPositions.push({ x: centerX, z: centerZ });
+  }
+  furniture.forEach(f => {
+    if (f.userData.asset === 'table' || f.userData.asset === 'kitchen') {
+      lightPositions.push({ x: f.position.x, z: f.position.z });
+    }
+  });
+
+  const uniqueLights = [];
+  lightPositions.forEach(lp => {
+    if (!uniqueLights.some(u => Math.hypot(u.x - lp.x, u.z - lp.z) < 1.5)) {
+      uniqueLights.push(lp);
+    }
+  });
+
+  uniqueLights.forEach(lp => {
+    const g = new THREE.Group();
+    g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.5, 8), matPendantMetal).translateY(WALL_H - 0.25));
+    g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.06, 12), matPendantMetal).translateY(WALL_H - 0.03));
+    g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.22, 0.4, 16, 1, true), matPendantGlass).translateY(WALL_H - 0.52));
+    g.add(new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 6), matPendantGlass).translateY(WALL_H - 0.52));
+    g.position.set(lp.x, 0, lp.z);
+    g.traverse(c => { if (c.isMesh) c.castShadow = true; });
+    scene.add(g);
+    pendantLights.push(g);
+  });
+}
+
+// ═══════════════════════════════════
+//  AUTO WINDOWS
+// ═══════════════════════════════════
+function autoWindows() {
+  if (windows.length > 0) return; // Don't override manually placed or template windows
+  if (!walls.length) return;
+
+  const b = bounds();
+  const centerX = (b.mnX + b.mxX) / 2, centerZ = (b.mnZ + b.mxZ) / 2;
+
+  walls.forEach(w => {
+    const d = w.userData;
+    const len = Math.hypot(d.endX - d.startX, d.endZ - d.startZ);
+    if (len < 2) return; // Too short for a window
+
+    const { nx, nz } = interiorNormal(d, centerX, centerZ);
+    const dx = d.endX - d.startX, dz = d.endZ - d.startZ;
+    const ux = dx / len, uz = dz / len;
+    const angle = Math.atan2(dx, dz);
+
+    // Check no door blocks this wall
+    const hasDoor = doors.some(dr => {
+      const dp = dr.position;
+      const t = ((dp.x - d.startX) * ux + (dp.z - d.startZ) * uz) / len;
+      return t > 0.05 && t < 0.95 && Math.abs((dp.x - (d.startX + ux * t * len)) + (dp.z - (d.startZ + uz * t * len))) < 0.6;
+    });
+    if (hasDoor) return;
+
+    // Place 1 window for walls 2-4m, 2 windows for walls >4m
+    const count = len > 4 ? 2 : 1;
+    for (let i = 0; i < count; i++) {
+      const t = count === 1 ? 0.5 : 0.25 + i * 0.5;
+      const wx = d.startX + dx * t;
+      const wz = d.startZ + dz * t;
+      const win = createWindowAsset();
+      win.position.set(wx + nx * (WALL_T / 2 + 0.02), 0, wz + nz * (WALL_T / 2 + 0.02));
+      win.rotation.y = angle;
+      scene.add(win);
+      windows.push(win);
+    }
+  });
+
+  if (windows.length) {
+    infoBar.innerHTML = 'Auto-placed <span class="text-[#B8C876] font-bold">' + windows.length + '</span> windows &bull; Walls: <span class="text-[#B8C876] font-bold">' + walls.length + '</span>';
+  }
 }
 
 // ═══════════════════════════════════
@@ -626,6 +715,8 @@ function rebuildAll(){
   pillars.forEach(p=>{scene.remove(p);p.geometry?.dispose();});pillars=[];
   interiorPanels.forEach(p=>{scene.remove(p);if(p.geometry)p.geometry.dispose();});interiorPanels=[];
   baseboards.forEach(b=>{scene.remove(b);if(b.geometry)b.geometry.dispose();});baseboards=[];
+  pendantLights.forEach(p=>{scene.remove(p);});pendantLights=[];
+  interiorDoorMeshes.forEach(d=>{scene.remove(d);});interiorDoorMeshes=[];
 
   const toRemove=[];
   scene.children.forEach(c=>{if(c.userData&&(c.userData.isBase||c.userData.isPath||c.userData.isShutter))toRemove.push(c);});
@@ -657,6 +748,7 @@ function rebuildAll(){
   }
 
   addGarden();
+  autoWindows();
 
   endpoints.length=0;
   walls.forEach(w=>{const d=w.userData;endpoints.push({x:d.startX,z:d.startZ},{x:d.endX,z:d.endZ});});
@@ -668,73 +760,326 @@ function clearPreview(){
 }
 
 // ═══════════════════════════════════
-//  GARDEN
+//  GARDEN + POOL + DECORATIONS
 // ═══════════════════════════════════
-const matWater=new THREE.MeshStandardMaterial({color:'#4a90d9',roughness:0.15,metalness:0.3,transparent:true,opacity:0.75});
-const matPoolEdge=new THREE.MeshStandardMaterial({color:'#d4cfc4',roughness:0.4});
-const matHedge=new THREE.MeshStandardMaterial({color:'#3d5a1e',roughness:0.7});
-const matTreeTrunk=new THREE.MeshStandardMaterial({color:'#6b4a30',roughness:0.7});
-const matTreeLeaves=new THREE.MeshStandardMaterial({color:'#3a6b25',roughness:0.75});
-const matDeck=new THREE.MeshStandardMaterial({color:'#b8956e',roughness:0.55});
-const matFence=new THREE.MeshStandardMaterial({color:'#e8e0d5',roughness:0.5});
+const matWater = new THREE.MeshStandardMaterial({color:'#4a90d9',roughness:0.08,metalness:0.4,transparent:true,opacity:0.78});
+const matPoolEdge = new THREE.MeshStandardMaterial({color:'#e8e2d8',roughness:0.35});
+const matPoolTile = new THREE.MeshStandardMaterial({color:'#5a90c8',roughness:0.2,metalness:0.1});
+const matHedge = new THREE.MeshStandardMaterial({color:'#3d5a1e',roughness:0.7});
+const matTreeTrunk = new THREE.MeshStandardMaterial({color:'#6b4a30',roughness:0.7});
+const matTreeLeaves = new THREE.MeshStandardMaterial({color:'#3a6b25',roughness:0.75});
+const matTreeLeaves2 = new THREE.MeshStandardMaterial({color:'#4a7b35',roughness:0.7});
+const matTreeLeaves3 = new THREE.MeshStandardMaterial({color:'#2d5a18',roughness:0.8});
+const matDeck = new THREE.MeshStandardMaterial({color:'#b8956e',roughness:0.55});
+const matFence = new THREE.MeshStandardMaterial({color:'#e8e0d5',roughness:0.5});
+const matFlower1 = new THREE.MeshStandardMaterial({color:'#e85d75',roughness:0.5});
+const matFlower2 = new THREE.MeshStandardMaterial({color:'#f5a623',roughness:0.5});
+const matFlower3 = new THREE.MeshStandardMaterial({color:'#ff6b8a',roughness:0.5});
+const matFlower4 = new THREE.MeshStandardMaterial({color:'#ffda79',roughness:0.5});
+const matFlower5 = new THREE.MeshStandardMaterial({color:'#c94c8c',roughness:0.5});
+const matGravel = new THREE.MeshStandardMaterial({color:'#c8c0b8',roughness:0.8});
+const matLoungeChair = new THREE.MeshStandardMaterial({color:'#e8d5c0',roughness:0.5});
+const matLoungeFrame = new THREE.MeshStandardMaterial({color:'#5a5a5a',roughness:0.3,metalness:0.5});
+const matUmbrella = new THREE.MeshStandardMaterial({color:'#e85d3a',roughness:0.4,side:THREE.DoubleSide});
+const matUmbrellaPole = new THREE.MeshStandardMaterial({color:'#c8c0b0',roughness:0.2,metalness:0.6});
+const matBirdBath = new THREE.MeshStandardMaterial({color:'#c8c0b0',roughness:0.4});
+const matMailbox = new THREE.MeshStandardMaterial({color:'#4a4a6a',roughness:0.3,metalness:0.5});
+const matMailboxPost = new THREE.MeshStandardMaterial({color:'#8a7a6a',roughness:0.6});
+const matLampPost = new THREE.MeshStandardMaterial({color:'#3a3a3a',roughness:0.2,metalness:0.7});
+const matLampGlow = new THREE.MeshStandardMaterial({color:'#ffe8c0',roughness:0.1,emissive:'#ffe8c0',emissiveIntensity:0.6});
 
-function addTree(x,z,s=1){
-  const g=new THREE.Group();
-  const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.08*s,0.12*s,1.8*s,8),matTreeTrunk);
-  trunk.position.y=0.9*s;trunk.castShadow=true;g.add(trunk);
-  const leaves1=new THREE.Mesh(new THREE.ConeGeometry(0.7*s,1.3*s,8),matTreeLeaves);
-  leaves1.position.y=2.0*s;leaves1.castShadow=true;g.add(leaves1);
-  const leaves2=new THREE.Mesh(new THREE.ConeGeometry(0.55*s,1.1*s,8),matTreeLeaves);
-  leaves2.position.y=2.8*s;leaves2.castShadow=true;g.add(leaves2);
-  g.position.set(x,0,z);return g;
+// Pool water meshes for animation
+let poolWaterMeshes = [];
+
+function addTree(x, z, s = 1) {
+  const g = new THREE.Group();
+  const trunkH = 1.8 * s;
+  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.08 * s, 0.12 * s, trunkH, 8), matTreeTrunk);
+  trunk.position.y = trunkH / 2; trunk.castShadow = true; g.add(trunk);
+  const leafMats = [matTreeLeaves, matTreeLeaves2, matTreeLeaves3];
+  const layers = [{r: 0.7 * s, h: 1.3 * s, y: trunkH + 0.2 * s}, {r: 0.55 * s, h: 1.1 * s, y: trunkH + 0.7 * s}, {r: 0.4 * s, h: 0.8 * s, y: trunkH + 1.2 * s}];
+  layers.forEach((l, i) => {
+    const cone = new THREE.Mesh(new THREE.ConeGeometry(l.r, l.h, 10), leafMats[i]);
+    cone.position.y = l.y; cone.castShadow = true; g.add(cone);
+  });
+  g.position.set(x, 0, z); return g;
 }
 
-function addGarden(){
-  if(gardenGroup){scene.remove(gardenGroup);gardenGroup=null;}
-  if(!walls.length)return;
-  const b=bounds();
-  const g=new THREE.Group();
+function addBush(x, z, s = 1) {
+  const g = new THREE.Group();
+  const bushMat = new THREE.MeshStandardMaterial({color: ['#3d6a20','#4a7a2a','#355a18'][Math.floor(Math.random()*3)], roughness: 0.7});
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(0.35 * s, 8, 6), bushMat).translateY(0.25 * s));
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(0.25 * s, 8, 6), bushMat).translateY(0.35 * s).translateX(0.2 * s));
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(0.22 * s, 8, 6), bushMat).translateY(0.3 * s).translateX(-0.18 * s).translateZ(0.1 * s));
+  g.position.set(x, 0, z); g.traverse(c => { if (c.isMesh) c.castShadow = c.receiveShadow = true; });
+  return g;
+}
 
-  const poolW=3.5,poolD=2.0,poolH=0.5;
-  const poolX=b.mxX+2.5,poolZ=cz();
-  const poolBody=new THREE.Mesh(new THREE.BoxGeometry(poolW,poolH,poolD),matWater);
-  poolBody.position.set(poolX,poolH/2-0.05,poolZ);poolBody.receiveShadow=true;g.add(poolBody);
-  const edgeT=0.12,edgeH=0.1;
-  const makeEdge=(w,d,x,z)=>{const e=new THREE.Mesh(new THREE.BoxGeometry(w,edgeH,d),matPoolEdge);e.position.set(x,0.1,z);e.receiveShadow=true;return e;};
-  g.add(makeEdge(poolW+edgeT*2,edgeT,poolX,poolZ+poolD/2+edgeT/2));
-  g.add(makeEdge(poolW+edgeT*2,edgeT,poolX,poolZ-poolD/2-edgeT/2));
-  g.add(makeEdge(edgeT,poolD,poolX+poolW/2+edgeT/2,poolZ));
-  g.add(makeEdge(edgeT,poolD,poolX-poolW/2-edgeT/2,poolZ));
+function addFlowerBed(x, z, w, d) {
+  const g = new THREE.Group();
+  const edgeMat = new THREE.MeshStandardMaterial({color:'#6b5b4f', roughness:0.5});
+  // Border
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(w + 0.12, 0.1, 0.08), edgeMat).translateY(0.05).translateZ(d / 2));
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(w + 0.12, 0.1, 0.08), edgeMat).translateY(0.05).translateZ(-d / 2));
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.1, d), edgeMat).translateY(0.05).translateX(w / 2));
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.1, d), edgeMat).translateY(0.05).translateX(-w / 2));
+  // Soil
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(w - 0.02, 0.02, d - 0.02), new THREE.MeshStandardMaterial({color:'#3a2a1a', roughness:0.9})).translateY(0.06));
+  // Flowers (random)
+  const flowerMats = [matFlower1, matFlower2, matFlower3, matFlower4, matFlower5];
+  const count = Math.floor(w * d * 8);
+  for (let i = 0; i < count; i++) {
+    const fx = (Math.random() - 0.5) * (w - 0.2);
+    const fz = (Math.random() - 0.5) * (d - 0.2);
+    const fh = 0.08 + Math.random() * 0.2;
+    const col = flowerMats[Math.floor(Math.random() * flowerMats.length)];
+    // Stem
+    g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, fh, 6), new THREE.MeshStandardMaterial({color:'#3a6a20', roughness:0.7})).translateX(fx).translateY(0.07 + fh / 2).translateZ(fz));
+    // Petals
+    g.add(new THREE.Mesh(new THREE.SphereGeometry(0.04 + Math.random() * 0.04, 6, 4), col).translateX(fx).translateY(0.07 + fh + 0.02).translateZ(fz));
+  }
+  g.position.set(x, 0, z); g.traverse(c => { if (c.isMesh) c.castShadow = c.receiveShadow = true; });
+  return g;
+}
 
-  const deckW=Math.min(4,b.mxX-b.mnX+1),deckD=2.5;
-  const deckX=(b.mnX+b.mxX)/2,deckZ=b.mxZ+1.8;
-  const deck=new THREE.Mesh(new THREE.BoxGeometry(deckW,0.08,deckD),matDeck);
-  deck.position.set(deckX,0.06,deckZ);deck.receiveShadow=true;g.add(deck);
-  for(let i=0;i<5;i++){
-    const plank=new THREE.Mesh(new THREE.BoxGeometry(deckW-0.1,0.005,0.04),matTrim);
-    plank.position.set(deckX,0.1,deckZ-deckD/2+(i+1)*deckD/6);g.add(plank);
+function addLoungeChair(x, z, ry = 0) {
+  const g = new THREE.Group();
+  // Frame
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.06, 1.8), matLoungeFrame).translateY(0.15));
+  // Seat cushion
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.08, 1.5), matLoungeChair).translateY(0.22));
+  // Backrest (angled)
+  const back = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.06), matLoungeChair);
+  back.position.set(0, 0.42, -0.7); back.rotation.x = -0.4;
+  g.add(back);
+  // Legs
+  [[-0.3, 0.04, 0.8], [0.3, 0.04, 0.8], [-0.3, 0.04, -0.8], [0.3, 0.04, -0.8]].forEach(([lx, ly, lz]) => {
+    g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.08, 8), matLoungeFrame).translateX(lx).translateY(ly).translateZ(lz));
+  });
+  g.position.set(x, 0, z); g.rotation.y = ry;
+  g.traverse(c => { if (c.isMesh) c.castShadow = c.receiveShadow = true; });
+  return g;
+}
+
+function addUmbrella(x, z) {
+  const g = new THREE.Group();
+  // Pole
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 2.2, 12), matUmbrellaPole).translateY(1.1));
+  // Canopy (cone)
+  g.add(new THREE.Mesh(new THREE.ConeGeometry(0.9, 0.35, 16, 1, true), matUmbrella).translateY(2.05));
+  // Top cap
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 6), matUmbrellaPole).translateY(2.22));
+  g.position.set(x, 0, z);
+  g.traverse(c => { if (c.isMesh) c.castShadow = true; });
+  return g;
+}
+
+function addBirdBath(x, z) {
+  const g = new THREE.Group();
+  // Base
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.13, 0.3, 12), matBirdBath).translateY(0.15));
+  // Pedestal
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.07, 0.6, 12), matBirdBath).translateY(0.5));
+  // Bowl
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(0.22, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), matBirdBath).translateY(0.78));
+  // Water in bowl
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.14, 0.03, 12), matWater).translateY(0.79));
+  g.position.set(x, 0, z);
+  g.traverse(c => { if (c.isMesh) c.castShadow = c.receiveShadow = true; });
+  return g;
+}
+
+function addMailboxP(x, z) {
+  const g = new THREE.Group();
+  // Post
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 1.0, 8), matMailboxPost).translateY(0.5));
+  // Box
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.22, 0.35), matMailbox).translateY(1.05).translateZ(0.08));
+  // Flag
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.06, 0.02), new THREE.MeshStandardMaterial({color:'#e84040', roughness:0.4})).translateY(1.2).translateZ(-0.15));
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.14, 6), matMailboxPost).translateY(1.14).translateZ(-0.15));
+  g.position.set(x, 0, z);
+  g.traverse(c => { if (c.isMesh) c.castShadow = c.receiveShadow = true; });
+  return g;
+}
+
+function addLampPost(x, z) {
+  const g = new THREE.Group();
+  // Base
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.15, 12), matLampPost).translateY(0.075));
+  // Pole
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 2.0, 12), matLampPost).translateY(1.1));
+  // Lamp housing
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.16, 0.4, 16), matLampPost).translateY(2.1));
+  // Glow
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(0.08, 12, 8), matLampGlow).translateY(2.25));
+  g.position.set(x, 0, z);
+  g.traverse(c => { if (c.isMesh) c.castShadow = c.receiveShadow = true; });
+  return g;
+}
+
+function addSteppingStones(sx, sz, ex, ez, count) {
+  const g = new THREE.Group();
+  const stoneMat = new THREE.MeshStandardMaterial({color:'#b0a898', roughness:0.65});
+  for (let i = 0; i < count; i++) {
+    const t = i / (count - 1);
+    const x = sx + (ex - sx) * t + (Math.random() - 0.5) * 0.25;
+    const z = sz + (ez - sz) * t + (Math.random() - 0.5) * 0.25;
+    const s = 0.18 + Math.random() * 0.12;
+    const stone = new THREE.Mesh(new THREE.CylinderGeometry(s, s + 0.02, 0.04, 8), stoneMat);
+    stone.position.set(x, 0.02, z); stone.receiveShadow = true;
+    g.add(stone);
+  }
+  return g;
+}
+
+function addGarden() {
+  if (gardenGroup) { scene.remove(gardenGroup); gardenGroup = null; }
+  poolWaterMeshes = [];
+  if (!walls.length) return;
+  const b = bounds();
+  const g = new THREE.Group();
+  const cx_ = (b.mnX + b.mxX) / 2, cz_ = (b.mnZ + b.mxZ) / 2;
+  const hw = b.mxX - b.mnX, hd = b.mxZ - b.mnZ;
+
+  // ── POOL (animated water) ──
+  const poolW = Math.max(3, hw * 0.7), poolD = Math.max(1.8, Math.min(2.5, hd * 0.5));
+  const poolX = b.mxX + 2.2, poolZ = cz_;
+  const poolH = 0.5;
+
+  // Pool body (tile interior)
+  const poolInner = new THREE.Mesh(new THREE.BoxGeometry(poolW - 0.1, poolH, poolD - 0.1), matPoolTile);
+  poolInner.position.set(poolX, poolH / 2 - 0.02, poolZ); poolInner.receiveShadow = true; g.add(poolInner);
+
+  // Water surface (to be animated)
+  const waterGeo = new THREE.PlaneGeometry(poolW - 0.16, poolD - 0.16, 20, 12);
+  const waterMesh = new THREE.Mesh(waterGeo, matWater);
+  waterMesh.rotation.x = -Math.PI / 2;
+  waterMesh.position.set(poolX, poolH - 0.06, poolZ);
+  waterMesh.receiveShadow = true;
+  g.add(waterMesh);
+  poolWaterMeshes.push(waterMesh);
+
+  // Pool edge coping
+  const edgeT = 0.14, edgeH = 0.08;
+  const makeEdge = (w, d, x, z) => {
+    const e = new THREE.Mesh(new THREE.BoxGeometry(w, edgeH, d), matPoolEdge);
+    e.position.set(x, poolH, z); e.receiveShadow = true; e.castShadow = true; return e;
+  };
+  g.add(makeEdge(poolW + edgeT * 2, edgeT, poolX, poolZ + poolD / 2 + edgeT / 2));
+  g.add(makeEdge(poolW + edgeT * 2, edgeT, poolX, poolZ - poolD / 2 - edgeT / 2));
+  g.add(makeEdge(edgeT, poolD, poolX + poolW / 2 + edgeT / 2, poolZ));
+  g.add(makeEdge(edgeT, poolD, poolX - poolW / 2 - edgeT / 2, poolZ));
+
+  // Pool steps (shallow end)
+  for (let s = 0; s < 3; s++) {
+    const stepH = 0.12, stepD = 0.3;
+    const step = new THREE.Mesh(new THREE.BoxGeometry(poolW * 0.4, stepH, stepD), matPoolEdge);
+    step.position.set(poolX - poolW * 0.2, poolH - stepH * (s + 1), poolZ - poolD / 2 + stepD / 2 + s * stepD);
+    step.receiveShadow = true; g.add(step);
   }
 
-  const hx=b.mnX-0.8,hz=b.mnZ-0.8,hw=b.mxX-b.mnX+1.6,hd=b.mxZ-b.mnZ+1.6;
-  const makeHedge=(w,d,x,z)=>{const h=new THREE.Mesh(new THREE.BoxGeometry(w,0.5,d),matHedge);h.position.set(x,0.25,z);h.castShadow=h.receiveShadow=true;return h;};
-  g.add(makeHedge(hw,0.25,(b.mnX+b.mxX)/2,b.mnZ-0.8));
-  g.add(makeHedge(hw,0.25,(b.mnX+b.mxX)/2,b.mxZ+0.8));
-  g.add(makeHedge(0.25,hd,b.mnX-0.8,(b.mnZ+b.mxZ)/2));
-  g.add(makeHedge(0.25,hd-1.6,b.mxX+0.8,(b.mnZ+b.mxZ)/2+0.8));
-  g.add(makeHedge(0.25,hd-1.6,b.mxX+0.8,(b.mnZ+b.mxZ)/2-0.8));
+  // ── Pool loungers + umbrella ──
+  g.add(addLoungeChair(poolX - poolW / 2 - 0.5, poolZ - poolD / 2 - 0.4, 0));
+  g.add(addLoungeChair(poolX - poolW / 2 - 0.5, poolZ - poolD / 2 - 1.1, 0));
+  g.add(addUmbrella(poolX - poolW / 2 - 0.45, poolZ - poolD / 2 - 0.75));
 
-  g.add(addTree(b.mnX-2,b.mnZ-1.5,1.0));
-  g.add(addTree(b.mxX+2,b.mxZ+2,0.85));
-  g.add(addTree(b.mnX-1.5,b.mxZ+2,0.9));
-  g.add(addTree(b.mxX+2.5,b.mnZ-2,0.75));
+  // ── DECK ──
+  const deckW = Math.min(4, hw + 1), deckD = 2.5;
+  const deckX = cx_, deckZ = b.mxZ + 1.8;
+  const deck = new THREE.Mesh(new THREE.BoxGeometry(deckW, 0.08, deckD), matDeck);
+  deck.position.set(deckX, 0.06, deckZ); deck.receiveShadow = true; g.add(deck);
+  for (let i = 0; i < 6; i++) {
+    const plank = new THREE.Mesh(new THREE.BoxGeometry(deckW - 0.1, 0.005, 0.04), new THREE.MeshStandardMaterial({color:'#a08060', roughness:0.5}));
+    plank.position.set(deckX, 0.1, deckZ - deckD / 2 + (i + 1) * deckD / 7); g.add(plank);
+  }
+  // Patio table + chairs on deck
+  const patioTable = new THREE.Group();
+  const tblTop = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 0.05, 16), new THREE.MeshStandardMaterial({color:'#e8dcc8', roughness:0.35}));
+  tblTop.position.y = 0.7; patioTable.add(tblTop);
+  const tblLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.68, 8), matLoungeFrame);
+  tblLeg.position.y = 0.34; patioTable.add(tblLeg);
+  const tblBase = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.3, 0.04, 12), matLoungeFrame);
+  tblBase.position.y = 0.02; patioTable.add(tblBase);
+  patioTable.position.set(deckX, 0.1, deckZ + 0.2);
+  patioTable.traverse(c => { if (c.isMesh) c.castShadow = c.receiveShadow = true; });
+  g.add(patioTable);
 
-  for(let i=0;i<Math.floor(hw/1.5);i++){
-    const post=new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.05,0.7,6),matFence);
-    post.position.set(b.mnX-0.8+i*1.5,0.35,b.mnZ-1.1);
-    post.castShadow=true;g.add(post);
+  // Simple patio chairs
+  for (let ci = 0; ci < 4; ci++) {
+    const angle = (ci / 4) * Math.PI * 2 + Math.PI / 4;
+    const chair = new THREE.Group();
+    chair.add(new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.04, 0.4), matLoungeChair).translateY(0.4));
+    chair.add(new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.35, 0.04), matLoungeChair).translateY(0.55).translateZ(-0.18));
+    [[-0.16, 0.2, 0.16], [0.16, 0.2, 0.16], [-0.16, 0.2, -0.16], [0.16, 0.2, -0.16]].forEach(([lx, ly, lz]) => {
+      chair.add(new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.4, 6), matLoungeFrame).translateX(lx).translateY(ly).translateZ(lz));
+    });
+    chair.position.set(deckX + Math.cos(angle) * 0.7, 0.1, deckZ + 0.2 + Math.sin(angle) * 0.7);
+    chair.rotation.y = -angle;
+    chair.traverse(c => { if (c.isMesh) c.castShadow = c.receiveShadow = true; });
+    g.add(chair);
   }
 
-  scene.add(g);gardenGroup=g;
+  // ── HEDGES ──
+  const makeHedge = (w, d, x, z) => {
+    const h = new THREE.Mesh(new THREE.BoxGeometry(w, 0.5, d), matHedge);
+    h.position.set(x, 0.25, z); h.castShadow = h.receiveShadow = true; return h;
+  };
+  g.add(makeHedge(hw + 1.6, 0.25, cx_, b.mnZ - 0.8));
+  g.add(makeHedge(hw + 1.6, 0.25, cx_, b.mxZ + 0.8));
+  g.add(makeHedge(0.25, hd + 1.6, b.mnX - 0.8, cz_));
+  // Gap for entrance
+  g.add(makeHedge(0.25, hd * 0.35, b.mxX + 0.8, cz_ - hd * 0.3));
+  g.add(makeHedge(0.25, hd * 0.35, b.mxX + 0.8, cz_ + hd * 0.3));
+
+  // ── FLOWER BEDS ──
+  g.add(addFlowerBed(b.mnX - 0.2, b.mnZ + 1, 1.2, 0.6));
+  g.add(addFlowerBed(b.mxX + 0.2, b.mnZ + 1.5, 1.0, 0.6));
+  g.add(addFlowerBed(b.mnX - 0.2, b.mxZ - 1, 1.4, 0.5));
+  g.add(addFlowerBed(poolX + poolW / 2 + 0.3, poolZ + 0.5, 1.0, 0.5));
+
+  // ── TREES ──
+  g.add(addTree(b.mnX - 2.5, b.mnZ - 2, 1.1));
+  g.add(addTree(b.mxX + 2.5, b.mxZ + 2.5, 0.9));
+  g.add(addTree(b.mnX - 2, b.mxZ + 2.5, 1.0));
+  g.add(addTree(b.mxX + 3, b.mnZ - 2.5, 0.8));
+  g.add(addTree(poolX + poolW / 2 + 1.5, poolZ - 1.5, 0.7));
+  g.add(addTree(poolX + poolW / 2 + 2, poolZ + 2, 0.75));
+
+  // ── BUSHES ──
+  g.add(addBush(b.mnX - 0.5, b.mnZ - 0.5, 0.8));
+  g.add(addBush(b.mxX + 0.5, b.mnZ - 0.5, 0.9));
+  g.add(addBush(b.mnX - 0.5, b.mxZ + 0.5, 0.85));
+  g.add(addBush(poolX - poolW / 2 - 0.2, poolZ + poolD / 2 + 0.2, 0.7));
+  g.add(addBush(poolX - poolW / 2 - 0.2, poolZ - poolD / 2 - 0.2, 0.7));
+
+  // ── FENCE POSTS ──
+  const numPosts = Math.floor((hw + 1.6) / 1.5);
+  for (let i = 0; i < numPosts; i++) {
+    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 0.7, 6), matFence);
+    post.position.set(b.mnX - 0.8 + i * 1.5, 0.35, b.mnZ - 1.1);
+    post.castShadow = true; g.add(post);
+  }
+
+  // ── STEPPING STONES (path from deck to pool) ──
+  g.add(addSteppingStones(deckX, deckZ - deckD / 2, poolX - poolW / 2 - 0.6, poolZ + poolD / 2 + 0.3, 6));
+
+  // ── GARDEN FEATURES ──
+  g.add(addBirdBath(b.mnX - 1.5, cz_));
+  g.add(addMailboxP(b.mxX + 1, b.mnZ - 0.3));
+  g.add(addLampPost(b.mnX - 1.2, b.mnZ - 1.2));
+  g.add(addLampPost(b.mxX + 0.8, b.mxZ + 0.5));
+
+  // ── GRAVEL PATH (entrance) ──
+  for (let pi = 0; pi < 8; pi++) {
+    const gx = b.mxX + 0.8 + pi * 0.35;
+    const gravel = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 1.2), matGravel);
+    gravel.rotation.x = -Math.PI / 2;
+    gravel.position.set(gx, 0.005, cz_);
+    gravel.receiveShadow = true; g.add(gravel);
+  }
+
+  scene.add(g); gardenGroup = g;
 }
 
 // ═══════════════════════════════════
@@ -745,6 +1090,8 @@ function clearScene(){
   walls.length=0;windows.length=0;doors.length=0;furniture.length=0;pillars.length=0;undoStack.length=0;
   interiorPanels.forEach(p=>{scene.remove(p);});interiorPanels=[];
   baseboards.forEach(b=>{scene.remove(b);});baseboards=[];
+  pendantLights.forEach(p=>{scene.remove(p);});pendantLights=[];
+  interiorDoorMeshes.forEach(d=>{scene.remove(d);});interiorDoorMeshes=[];
   if(foundationMesh){scene.remove(foundationMesh);foundationMesh=null;}
   if(floorMesh){scene.remove(floorMesh);floorMesh=null;}
   if(ceilingMesh){scene.remove(ceilingMesh);ceilingMesh=null;}
@@ -1263,6 +1610,8 @@ document.getElementById('btnClear').addEventListener('click',()=>{
   walls=[];windows=[];doors=[];furniture=[];pillars=[];undoStack=[];
   interiorPanels.forEach(p=>{scene.remove(p);});interiorPanels=[];
   baseboards.forEach(b=>{scene.remove(b);});baseboards=[];
+  pendantLights.forEach(p=>{scene.remove(p);});pendantLights=[];
+  interiorDoorMeshes.forEach(d=>{scene.remove(d);});interiorDoorMeshes=[];
   if(foundationMesh){scene.remove(foundationMesh);foundationMesh=null;}
   if(floorMesh){scene.remove(floorMesh);floorMesh=null;}
   if(ceilingMesh){scene.remove(ceilingMesh);ceilingMesh=null;}
@@ -1316,6 +1665,21 @@ function animate(){
   const now = performance.now();
   const dt = Math.min((now - lastTime) / 1000, 0.1);
   lastTime = now;
+
+  // ── Pool water animation ──
+  const t = now * 0.001;
+  for (const wm of poolWaterMeshes) {
+    if (!wm || !wm.geometry) continue;
+    const pos = wm.geometry.attributes.position;
+    if (!pos) continue;
+    for (let i = 0; i < pos.count; i++) {
+      const x = pos.getX(i), y = pos.getY(i);
+      pos.setZ(i, Math.sin(x * 3 + t * 2.5) * 0.025 + Math.cos(y * 4 - t * 1.8) * 0.02 + Math.sin((x + y) * 2 + t * 3) * 0.015);
+    }
+    pos.needsUpdate = true;
+    wm.geometry.computeVertexNormals();
+  }
+
   if (tourActive) {
     updateTour(dt);
   } else {
