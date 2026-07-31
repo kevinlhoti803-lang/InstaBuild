@@ -1791,9 +1791,9 @@ function getAiReply(q, lang) {
   }
   // ── GREETING ──
   if (q.includes('hello') || q.includes('hi') || q.includes('hey') || q.includes('përshëndetje') || q.includes('tung') || q.includes('hallo') || q.includes('guten') || q.includes('moin') || q.includes('si je') || q.includes('wie geht')) {
-    if (lang === 'sq') return 'Përshëndetje! Unë jam asistenti AI i InstaBuild. Më pyet për shtëpitë tona, çmimet, kohën e dorëzimit, ose çfarëdo tjetër!';
-    if (lang === 'de') return 'Hallo! Ich bin der InstaBuild KI-Assistent. Fragen Sie mich nach unseren Häusern, Preisen, Lieferzeiten oder allem anderen!';
-    return 'Hello! I\'m the InstaBuild AI assistant. Ask me about our homes, prices, delivery times, or anything else!';
+    if (lang === 'sq') return 'Mirë se vini në InstaBuild! Jam asistenti juaj personal i ndërtimit. Qoftë nëse ëndërroni për një studio të vogël e komode apo një vilë madhështore për familjen, jam këtu t\'ju udhëzoj në çdo hap — nga zgjedhja e modelit deri te dorëzimi. Si mund t\'ju ndihmoj sot?';
+    if (lang === 'de') return 'Herzlich willkommen bei InstaBuild! Ich bin Ihr persönlicher Bau-Assistent. Ob Sie von einem gemütlichen Studio oder einer großzügigen Familienvilla träumen — ich begleite Sie auf jedem Schritt, von der Modellauswahl bis zur Lieferung. Wie darf ich Ihnen heute helfen?';
+    return 'Welcome to InstaBuild! I\'m your personal construction assistant. Whether you\'re dreaming of a cozy little studio or a grand family villa, I\'m here to guide you every step of the way — from choosing the right model to delivery day. How can I help you today?';
   }
   // ── THANKS ──
   if (q.includes('thank') || q.includes('flm') || q.includes('faleminderit') || q.includes('danke') || q.includes('dankeschön')) {
