@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <title>InstaBuilt — Build Faster. Build Smarter.</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
@@ -1639,7 +1640,7 @@ function switchAuthTab(tab) {
       <button onclick="toggleAiChat()">&times;</button>
     </div>
     <div id="aiChatMessages">
-      <div class="ai-msg bot">Hi! I'm the InstaBuilt AI assistant. Ask me anything about our homes, pricing, services, or how to get started!</div>
+      <div class="ai-msg bot">Welcome to InstaBuilt! I'm your personal AI agent — here to guide you through everything we build. Whether you're curious about our modular homes, want to explore pricing, or just want to know what makes us different, ask away. How can I help you today?</div>
     </div>
     <div id="aiChatInput">
       <input type="text" id="aiInput" placeholder="Ask me anything..." onkeydown="if(event.key==='Enter')sendAiMsg()">
@@ -1691,121 +1692,207 @@ function switchAuthTab(tab) {
   font-weight:700; font-size:13px; cursor:pointer; transition:all 0.2s;
 }
 #aiChatInput button:hover { background:#3A4218; }
+/* Typing indicator */
+.ai-msg.typing { display:flex; gap:4px; align-items:center; padding:14px 16px; }
+.ai-msg.typing span {
+  width:7px; height:7px; border-radius:50%; background:#4B5320;
+  animation:typingBounce 1.2s infinite;
+}
+.ai-msg.typing span:nth-child(2) { animation-delay:0.2s; }
+.ai-msg.typing span:nth-child(3) { animation-delay:0.4s; }
+@keyframes typingBounce {
+  0%,60%,100% { opacity:0.3; transform:translateY(0); }
+  30% { opacity:1; transform:translateY(-4px); }
+}
 </style>
 
 <script>
+const GROQ_KEY = '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';
+const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const MODEL = 'llama-3.3-70b-versatile';
+
+const SYSTEM_PROMPT = `You are the InstaBuilt AI Assistant — a knowledgeable, warm, and professional chatbot for InstaBuilt, a premium modular construction company. You speak naturally and enthusiastically about the company's homes, services, and values. You're not just an FAQ bot — you're a genuine AI agent who can discuss anything about InstaBuilt with depth and personality.
+
+## YOUR IDENTITY
+- You are the official AI agent of InstaBuilt (not "an AI assistant" — you ARE the InstaBuilt agent)
+- You were built to help clients discover their perfect modular home
+- You're friendly, confident, and genuinely excited about what InstaBuilt builds
+- You speak like a knowledgeable consultant, not a scripted robot
+- You can freestyle — you're not limited to canned responses
+
+## ABOUT INSTABUILT
+InstaBuilt is a premium modular construction company founded in 2010 in Prishtina, Kosovo by a visionary leader named Mentor. What started with 5 engineers has grown into an internationally recognized firm with 200+ professionals operating across 9 countries. Over 750+ homes built. The brand color is army green (#4B5320) and white.
+
+## HOUSE MODELS (8 models, 28-120m²)
+1. **Pop-Up Studio** — 28m², €19,900 — fully furnished, 48hr delivery, perfect for singles/home office
+2. **Compact One-Bedroom** — 45m², €32,500 — efficient layout, modern finishes
+3. **Family Two-Bedroom** — 65m², €46,800 — open living, covered porch, growing families
+4. **Premium Three-Bedroom** — 90m², €68,000 — spacious, premium finishes
+5. **Grand Villa** — 120m², €96,000 — 4 bedrooms, 2 bathrooms, double garage, garden
+6. **Alpine Chalet** — 55m², €42,000 — cozy mountain design, sloped roof
+7. **Coastal Bungalow** — 40m², €36,500 — open plan, large windows, beach vibe
+8. **Duo-Split** — 85m², €62,000 — two-unit split layout, flexible living
+
+All prices include delivery and professional setup. No assembly required — homes arrive pre-built and are installed in 48 hours.
+
+## COUNTRIES (9 countries)
+Kosovo (HQ in Prishtina), Turkey, Austria, Albania, Germany, Switzerland, North Macedonia, Italy, Montenegro.
+
+## KEY FACTS
+- Founded: 2010 in Prishtina, Kosovo
+- 200+ employees across 9 countries
+- 750+ homes built
+- 98% client satisfaction rate
+- 10-year structural warranty on every home
+- 48-hour delivery and setup
+- Modular prefab construction — precision factory-built, assembled on-site
+- All homes are energy-efficient with sustainable materials
+- 14+ years of experience
+
+## THE TEAM
+- **Mentor** — Founder & CEO, visionary leader who built the company from the ground up
+- **Drin Kelmendi** — Lead Architect, designs all signature modular layouts
+- **Diedon Kica** — Quality Assurance Lead, inspects every module (98% satisfaction rate)
+- **Besnik Pllana** — Client Relations Director, bridge between company and clients
+- Plus other talented engineers, designers, and construction professionals
+
+## THE 3D BUILDER
+InstaBuilt has an interactive 3D house builder on the website (3d.html page). Clients can:
+- Choose from 5 pre-built templates: Studio, Cottage, Family Home, L-Shape, or Villa
+- Draw custom walls with drag-to-draw, Shift for 90° snap
+- Place windows and doors that snap to walls
+- Furnish rooms with sofas, beds, tables, chairs, kitchen islands, lamps, plants, bookshelves, rugs
+- Switch between flat and gable roofs with chimney
+- Take a first-person interior tour (WASD movement, collision detection)
+- Export their design as a GLB 3D file
+- All in one page, no downloads needed
+
+## CONTACT
+- Email: info@instabuild.com
+- Phone: +383 44 123 456
+- HQ: Prishtina, Kosovo
+- Instagram: @instabuildglobal
+- YouTube: @instabuildglobal
+- TikTok: @instabuilt
+- LinkedIn: instabuilt
+- X (Twitter): BuiltInsta
+
+## WEBSITE PAGES
+- index.html — Home page with hero, services, projects, contact
+- about.html — Company story, values, timeline, stats
+- build.html — Interactive Leaflet heat map showing all projects across Europe + "Build Your Home" land selector
+- team.html — Leadership and team member profiles with photos
+- 3d.html — Interactive 3D house builder with templates, furniture, and first-person tour
+
+## HOW TO RESPOND
+- Detect the user's language and respond in that language (English, Albanian, German, etc.)
+- Be warm and enthusiastic but professional
+- For greetings, welcome them warmly to InstaBuilt
+- For pricing/model questions, give specific numbers and suggest related models
+- For 3D builder questions, explain how it works and encourage them to try it
+- For contact inquiries, provide full contact details
+- If asked something you don't know, be honest but pivot to what you can help with
+- Use **bold** for key numbers and model names
+- Keep responses concise but rich with useful detail
+- Never make up prices, specs, or features not listed above
+- Always end by inviting further questions
+
+You are the voice of InstaBuilt. Make every interaction feel like talking to a trusted expert who genuinely cares about finding the right home for each client.`;
+
+// Chat history — starts with system prompt
+let chatHistory = [{ role: 'system', content: SYSTEM_PROMPT }];
+
 function toggleAiChat() {
   const w = document.getElementById('aiChatWindow');
   w.style.display = w.style.display === 'none' ? 'flex' : 'none';
 }
 
-function detectLang(q) {
-  const sq = ['çmim','kushton','sa','shpi','shtëpi','vend','shtete','kohë','garanc','shqip','përshëndetje','mirë','madhësi','studio','vil','familje','modular','kontakt','faleminderit','çka','si je','çfarë','ku','ndërto','punon'];
-  const de = ['preis','kostet','viel','haus','heime','wo','länder','zeit','lieferung','garantie','deutsch','hallo','guten','größe','studio','villa','familie','modular','kontakt','danke','was','wie','wo','bauen','arbeit'];
-  let sqScore = 0, deScore = 0;
-  sq.forEach(w => { if (q.includes(w)) sqScore++; });
-  de.forEach(w => { if (q.includes(w)) deScore++; });
-  if (sqScore > deScore && sqScore > 1) return 'sq';
-  if (deScore > sqScore && deScore > 1) return 'de';
-  return 'en';
+function showTyping() {
+  const msgs = document.getElementById('aiChatMessages');
+  msgs.innerHTML += '<div class="ai-msg bot typing"><span></span><span></span><span></span></div>';
+  msgs.scrollTop = msgs.scrollHeight;
 }
 
-function sendAiMsg() {
+function removeTyping() {
+  const typing = document.querySelector('.ai-msg.bot.typing');
+  if (typing) typing.remove();
+}
+
+async function sendAiMsg() {
   const input = document.getElementById('aiInput');
   const msg = input.value.trim();
   if (!msg) return;
+
   const msgs = document.getElementById('aiChatMessages');
-  msgs.innerHTML += '<div class="ai-msg user">' + msg + '</div>';
+  
+  // Add user message
+  msgs.innerHTML += '<div class="ai-msg user">' + escapeHtml(msg) + '</div>';
   input.value = '';
   msgs.scrollTop = msgs.scrollHeight;
 
-  setTimeout(() => {
-    const q = msg.toLowerCase();
-    const lang = detectLang(q);
-    const reply = getAiReply(q, lang);
-    msgs.innerHTML += '<div class="ai-msg bot">' + reply + '</div>';
+  // Add to history
+  chatHistory.push({ role: 'user', content: msg });
+
+  // Show typing indicator
+  showTyping();
+
+  try {
+    const response = await fetch(GROQ_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + GROQ_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        messages: chatHistory,
+        temperature: 0.7,
+        max_tokens: 600
+      })
+    });
+
+    const data = await response.json();
+    removeTyping();
+
+    if (data.error) {
+      msgs.innerHTML += '<div class="ai-msg bot">Sorry, I ran into a small issue. Try asking me again in a moment!</div>';
+      msgs.scrollTop = msgs.scrollHeight;
+      return;
+    }
+
+    const reply = data.choices[0].message.content;
+    chatHistory.push({ role: 'assistant', content: reply });
+
+    // Keep history manageable (last 20 messages + system prompt)
+    if (chatHistory.length > 21) {
+      chatHistory = [chatHistory[0], ...chatHistory.slice(-20)];
+    }
+
+    // Render reply with bold/formatting support
+    const formatted = reply
+      .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+      .replace(/\n/g, '<br>');
+    
+    msgs.innerHTML += '<div class="ai-msg bot">' + formatted + '</div>';
     msgs.scrollTop = msgs.scrollHeight;
-  }, 600);
+
+  } catch (err) {
+    removeTyping();
+    msgs.innerHTML += '<div class="ai-msg bot">I\'m having trouble connecting right now. Please try again in a moment!</div>';
+    msgs.scrollTop = msgs.scrollHeight;
+  }
 }
 
-function getAiReply(q, lang) {
-  // ── PRICE ──
-  if (q.includes('price') || q.includes('cost') || q.includes('much') || q.includes('çmim') || q.includes('kushton') || q.includes('sa') || q.includes('preis') || q.includes('kostet') || q.includes('viel')) {
-    if (lang === 'sq') return 'Shtëpitë tona fillojnë nga <b>€19,900</b> për Pop-Up Studio 28m², deri në <b>€96,000</b> për Grand Villa 120m². Të gjitha çmimet përfshijnë dorëzimin dhe montimin!';
-    if (lang === 'de') return 'Unsere Häuser beginnen bei <b>€19.900</b> für das 28m² Pop-Up Studio, bis zu <b>€96.000</b> für die 120m² Grand Villa. Alle Preise inklusive Lieferung und Montage!';
-    return 'Our homes start from <b>€19,900</b> for the 28m² Pop-Up Studio, up to <b>€96,000</b> for the 120m² Grand Villa. All prices include delivery and setup!';
-  }
-  // ── SIZES ──
-  if (q.includes('size') || q.includes('m²') || q.includes('square') || q.includes('madhësi') || q.includes('model') || q.includes('größe') || q.includes('modell')) {
-    if (lang === 'sq') return 'Ne ofrojmë 8 modele: 28m² Studio, 45m² Compact, 65m² Family, 90m² Premium, 120m² Grand Villa, 55m² Alpine Chalet, 40m² Coastal Bungalow, dhe 85m² Duo-Split.';
-    if (lang === 'de') return 'Wir bieten 8 Modelle: 28m² Studio, 45m² Compact, 65m² Family, 90m² Premium, 120m² Grand Villa, 55m² Alpine Chalet, 40m² Coastal Bungalow und 85m² Duo-Split.';
-    return 'We offer 8 models: 28m² Studio, 45m² Compact, 65m² Family, 90m² Premium, 120m² Grand Villa, 55m² Alpine Chalet, 40m² Coastal Bungalow, and 85m² Duo-Split.';
-  }
-  // ── COUNTRIES ──
-  if (q.includes('country') || q.includes('where') || q.includes('location') || q.includes('vend') || q.includes('shtete') || q.includes('länder') || q.includes('wo')) {
-    if (lang === 'sq') return 'Ne operojmë në <b>9 shtete</b>: Kosovë (HQ), Turqi, Austri, Shqipëri, Gjermani, Zvicër, Maqedoni e Veriut, Itali, dhe Mal të Zi. Mbi 750+ shtëpi të ndërtuara!';
-    if (lang === 'de') return 'Wir sind in <b>9 Ländern</b> tätig: Kosovo (HQ), Türkei, Österreich, Albanien, Deutschland, Schweiz, Nordmazedonien, Italien und Montenegro. Über 750+ Häuser gebaut!';
-    return 'We operate in <b>9 countries</b>: Kosovo (HQ), Turkey, Austria, Albania, Germany, Switzerland, N. Macedonia, Italy, and Montenegro. Over 750+ homes built!';
-  }
-  // ── DELIVERY ──
-  if (q.includes('time') || q.includes('delivery') || q.includes('how long') || q.includes('kohë') || q.includes('dorëzim') || q.includes('lieferung') || q.includes('zeit') || q.includes('sa shpejt')) {
-    if (lang === 'sq') return 'Shtëpitë tona modulare dorëzohen dhe montohen për vetëm <b>48 orë</b> — pa nevojë për montim. Ndërtimet tradicionale zgjasin muaj; ne i bëjmë për ditë!';
-    if (lang === 'de') return 'Unsere Modulhäuser werden in nur <b>48 Stunden</b> geliefert und aufgebaut — keine Montage nötig. Traditionelle Bauten dauern Monate; wir brauchen Tage!';
-    return 'Our modular homes are delivered and set up in just <b>48 hours</b> — no assembly needed. Traditional builds take months; we take days.';
-  }
-  // ── HOW IT WORKS ──
-  if (q.includes('modular') || q.includes('prefab') || q.includes('how') || q.includes('si') || q.includes('funksionon') || q.includes('wie') || q.includes('funktioniert')) {
-    if (lang === 'sq') return 'InstaBuilt përdor <b>ndërtim modular të parafabrikuar</b> — komponentët ndërtohen me precizion në fabrikën tonë, pastaj dorëzohen dhe montohen në vend. Kjo do të thotë kohë më të shpejta, më pak mbeturina dhe cilësi të qëndrueshme.';
-    if (lang === 'de') return 'InstaBuilt verwendet <b>modulare Fertigbauweise</b> — Komponenten werden präzise in unserer Fabrik gefertigt, dann geliefert und vor Ort montiert. Das bedeutet schnellere Zeiten, weniger Abfall und gleichbleibende Qualität.';
-    return 'InstaBuilt uses <b>modular prefab construction</b> — components are precision-built in our factory, then delivered and assembled on-site. This means faster timelines, less waste, and consistent quality.';
-  }
-  // ── CONTACT ──
-  if (q.includes('contact') || q.includes('email') || q.includes('phone') || q.includes('kontakt') || q.includes('tel') || q.includes('nummer')) {
-    if (lang === 'sq') return 'Na kontaktoni në <b>info@instabuild.com</b> ose telefononi <b>+383 44 123 456</b>. Selia jonë është në Prishtinë, Kosovë. Na ndiqni në Instagram @instabuildglobal!';
-    if (lang === 'de') return 'Kontaktieren Sie uns unter <b>info@instabuild.com</b> oder rufen Sie <b>+383 44 123 456</b> an. Unser Hauptsitz ist in Prishtina, Kosovo. Folgen Sie uns auf Instagram @instabuildglobal!';
-    return 'Contact us at <b>info@instabuild.com</b> or call <b>+383 44 123 456</b>. Our HQ is in Prishtina, Kosovo. You can also visit our Instagram @instabuildglobal!';
-  }
-  // ── WARRANTY ──
-  if (q.includes('warranty') || q.includes('guarantee') || q.includes('garanc')) {
-    if (lang === 'sq') return 'Çdo shtëpi InstaBuilt vjen me <b>10 vjet garanci strukturore</b> dhe garancinë tonë të kënaqësisë së klientit 98%.';
-    if (lang === 'de') return 'Jedes InstaBuilt-Haus kommt mit einer <b>10-jährigen Strukturgarantie</b> und unserer 98% Kundenzufriedenheitsgarantie.';
-    return 'Every InstaBuilt home comes with a <b>10-year structural warranty</b> and our 98% client satisfaction guarantee.';
-  }
-  // ── STUDIO ──
-  if (q.includes('studio') || q.includes('28') || q.includes('pop-up') || q.includes('popup')) {
-    if (lang === 'sq') return '<b>Pop-Up Studio</b> është shtëpia jonë modulare 28m² me €19,900. Plotësisht e mobiluar, dorëzohet për 48 orë — perfekte për beqarë ose zyrë në shtëpi.';
-    if (lang === 'de') return 'Das <b>Pop-Up Studio</b> ist unser 28m² Modulhaus für €19.900. Voll möbliert, Lieferung in 48 Stunden — perfekt für Singles oder ein Home-Office.';
-    return 'The <b>Pop-Up Studio</b> is our signature 28m² modular home at €19,900. Fully furnished, delivered in 48 hours — perfect for singles or a home office.';
-  }
-  // ── VILLA ──
-  if (q.includes('villa') || q.includes('120') || q.includes('vil')) {
-    if (lang === 'sq') return '<b>Grand Villa</b> është shtëpia jonë kryesore 120m² me €96,000. Katër dhoma gjumi, dy banjo, garazh dopio, hapësirë kopshti dhe përfundime premium.';
-    if (lang === 'de') return 'Die <b>Grand Villa</b> ist unser Flaggschiff mit 120m² für €96.000. Vier Schlafzimmer, zwei Bäder, Doppelgarage, Garten und Premium-Ausstattung.';
-    return 'The <b>Grand Villa</b> is our flagship 120m² executive home at €96,000. Four bedrooms, two bathrooms, double garage, garden space, and premium finishes.';
-  }
-  // ── FAMILY ──
-  if (q.includes('family') || q.includes('65') || q.includes('familje') || q.includes('familie')) {
-    if (lang === 'sq') return '<b>Family Two-Bedroom</b> është 65m² me €46,800. Dy dhoma gjumi, hapësirë jetese e hapur, verandë e mbuluar — projektuar për familje në rritje.';
-    if (lang === 'de') return 'Das <b>Family Two-Bedroom</b> ist 65m² für €46.800. Zwei Schlafzimmer, offener Wohnbereich, überdachte Veranda — für wachsende Familien.';
-    return 'The <b>Family Two-Bedroom</b> is 65m² at €46,800. Two bedrooms, open living space, covered porch — designed for growing families.';
-  }
-  // ── GREETING ──
-  if (q.includes('hello') || q.includes('hi') || q.includes('hey') || q.includes('përshëndetje') || q.includes('tung') || q.includes('hallo') || q.includes('guten') || q.includes('moin') || q.includes('si je') || q.includes('wie geht')) {
-    if (lang === 'sq') return 'Mirë se vini në InstaBuilt! Jam asistenti juaj personal i ndërtimit. Qoftë nëse ëndërroni për një studio të vogël e komode apo një vilë madhështore për familjen, jam këtu t\'ju udhëzoj në çdo hap — nga zgjedhja e modelit deri te dorëzimi. Si mund t\'ju ndihmoj sot?';
-    if (lang === 'de') return 'Herzlich willkommen bei InstaBuilt! Ich bin Ihr persönlicher Bau-Assistent. Ob Sie von einem gemütlichen Studio oder einer großzügigen Familienvilla träumen — ich begleite Sie auf jedem Schritt, von der Modellauswahl bis zur Lieferung. Wie darf ich Ihnen heute helfen?';
-    return 'Welcome to InstaBuilt! I\'m your personal construction assistant. Whether you\'re dreaming of a cozy little studio or a grand family villa, I\'m here to guide you every step of the way — from choosing the right model to delivery day. How can I help you today?';
-  }
-  // ── THANKS ──
-  if (q.includes('thank') || q.includes('flm') || q.includes('faleminderit') || q.includes('danke') || q.includes('dankeschön')) {
-    if (lang === 'sq') return 'Të lutem! Më trego nëse ke pyetje të tjera për shtëpitë InstaBuilt.';
-    if (lang === 'de') return 'Gern geschehen! Lassen Sie mich wissen, wenn Sie weitere Fragen zu InstaBuilt-Häusern haben.';
-    return 'You\'re welcome! Let me know if you have any other questions about InstaBuilt homes.';
-  }
-  // ── DEFAULT ──
-  if (lang === 'sq') return 'Pyetje e mirë! InstaBuilt ka ndërtuar shtëpi modulare që nga viti 2010 me <b>750+ shtëpi</b> në 9 shtete. Ne ofrojmë 8 modele nga 28-120m², duke filluar nga €19,900. Shtëpitë tona dorëzohen dhe montohen për 48 orë me garanci 10 vjeçare. Për çfarë detajesh specifike mund të të ndihmoj?';
-  if (lang === 'de') return 'Gute Frage! InstaBuilt baut seit 2010 Modulhäuser mit <b>750+ Häusern</b> in 9 Ländern. Wir bieten 8 Modelle von 28-120m², ab €19.900. Unsere Häuser werden in 48 Stunden geliefert und aufgebaut, mit 10 Jahren Garantie. Bei welchen Details kann ich helfen?';
-  return 'Great question! InstaBuilt has been building modular homes since 2010 with <b>750+ homes</b> across 9 countries. We offer 8 models from 28-120m², starting at €19,900. Our homes are delivered and set up in 48 hours with a 10-year warranty. What specific details can I help with?';
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
 }
+
+// Allow Enter key to send
+document.getElementById('aiInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') sendAiMsg();
+});
 </script>
 
 </body>

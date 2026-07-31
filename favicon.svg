@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6B7A2E"/>
+      <stop offset="100%" stop-color="#4B5320"/>
+    </linearGradient>
+  </defs>
+  <!-- Foundation -->
+  <rect x="6" y="50" width="52" height="10" rx="2" fill="#3A4218"/>
+  <!-- Main building body -->
+  <rect x="12" y="18" width="40" height="34" rx="1" fill="url(#g)"/>
+  <!-- Roof triangle -->
+  <polygon points="4,18 32,2 60,18" fill="#6B7A2E"/>
+  <!-- Door -->
+  <rect x="25" y="36" width="14" height="18" rx="2" fill="#F0F2E8"/>
+  <!-- Windows -->
+  <rect x="16" y="24" width="10" height="8" rx="1" fill="#F0F2E8" opacity="0.9"/>
+  <rect x="38" y="24" width="10" height="8" rx="1" fill="#F0F2E8" opacity="0.9"/>
+  <!-- Window panes -->
+  <line x1="21" y1="24" x2="21" y2="32" stroke="#4B5320" stroke-width="0.8"/>
+  <line x1="16" y1="28" x2="26" y2="28" stroke="#4B5320" stroke-width="0.8"/>
+  <line x1="43" y1="24" x2="43" y2="32" stroke="#4B5320" stroke-width="0.8"/>
+  <line x1="38" y1="28" x2="48" y2="28" stroke="#4B5320" stroke-width="0.8"/>
+  <!-- Door handle -->
+  <circle cx="36" cy="46" r="1.2" fill="#4B5320"/>
+</svg>
